@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Safety Bay Tennis Club">
+  <!-- Safety Bay Tennis Club, distilled to the two things that survive at
+       16 pixels: the bay's double wave and the green ball that sits between
+       "Safety" and "Bay" in the lockup. Colours sampled from logo.png. -->
+  <rect width="32" height="32" rx="7" fill="#2271B8"/>
+  <circle cx="16" cy="11.2" r="5.4" fill="#5CBB47"/>
+  <path d="M12.7 7.8a5.4 5.4 0 0 1 0 6.8" fill="none" stroke="#EAF7E4" stroke-width="1.1" stroke-linecap="round" opacity="0.62"/>
+  <path d="M19.3 7.8a5.4 5.4 0 0 0 0 6.8" fill="none" stroke="#EAF7E4" stroke-width="1.1" stroke-linecap="round" opacity="0.62"/>
+  <path d="M2.6 22.4q3.35-3.3 6.7 0t6.7 0 6.7 0 6.7 0" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M2.6 27.4q3.35-3.3 6.7 0t6.7 0 6.7 0 6.7 0" fill="none" stroke="#9DC4E8" stroke-width="2.2" stroke-linecap="round"/>
+</svg>

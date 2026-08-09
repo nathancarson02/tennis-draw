@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- club icon (browser tab) — embedded so the page carries it anywhere -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJTYWZldHkgQmF5IFRlbm5pcyBDbHViIj4KICA8IS0tIFNhZmV0eSBCYXkgVGVubmlzIENsdWIsIGRpc3RpbGxlZCB0byB0aGUgdHdvIHRoaW5ncyB0aGF0IHN1cnZpdmUgYXQKICAgICAgIDE2IHBpeGVsczogdGhlIGJheSdzIGRvdWJsZSB3YXZlIGFuZCB0aGUgZ3JlZW4gYmFsbCB0aGF0IHNpdHMgYmV0d2VlbgogICAgICAgIlNhZmV0eSIgYW5kICJCYXkiIGluIHRoZSBsb2NrdXAuIENvbG91cnMgc2FtcGxlZCBmcm9tIGxvZ28ucG5nLiAtLT4KICA8cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMjI3MUI4Ii8+CiAgPGNpcmNsZSBjeD0iMTYiIGN5PSIxMS4yIiByPSI1LjQiIGZpbGw9IiM1Q0JCNDciLz4KICA8cGF0aCBkPSJNMTIuNyA3LjhhNS40IDUuNCAwIDAgMSAwIDYuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRUFGN0U0IiBzdHJva2Utd2lkdGg9IjEuMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjYyIi8+CiAgPHBhdGggZD0iTTE5LjMgNy44YTUuNCA1LjQgMCAwIDAgMCA2LjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0VBRjdFNCIgc3Ryb2tlLXdpZHRoPSIxLjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC42MiIvPgogIDxwYXRoIGQ9Ik0yLjYgMjIuNHEzLjM1LTMuMyA2LjcgMHQ2LjcgMCA2LjcgMCA2LjcgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTIuNiAyNy40cTMuMzUtMy4zIDYuNyAwdDYuNyAwIDYuNyAwIDYuNyAwIiBmaWxsPSJub25lIiBzdHJva2U9IiM5REM0RTgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cg==">
 <title>Safety Bay Tennis Club — Sunday Socials Draw Generator</title>
 <style>
   /* ============================================================
@@ -68,8 +70,11 @@
     --logo-mark-width: 250px;   /* crisp logo up in the header            */
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
+  /* DARK IS THE DEFAULT. The small script at the top of the body stamps
+     data-theme="dark" on the page unless the reader has picked light with the
+     toggle in the header. Deliberately NOT tied to prefers-color-scheme —
+     the board should come up dark whatever the visitor's laptop is set to. */
+  :root[data-theme="dark"] {
       --ink: #E8EFE6;
       --ink-soft: #BFCDBF;
       --muted: #8B9C8E;
@@ -109,7 +114,6 @@
       --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
       --shadow-2: 0 4px 18px rgba(0, 0, 0, 0.45);
       --shadow-3: 0 14px 38px rgba(0, 0, 0, 0.6);
-    }
   }
 
   /* ============================================================
@@ -733,6 +737,20 @@
     filter: var(--logo-wm-lift);
   }
 
+  /* theme toggle — top-left of the masthead, mirroring the logo top-right */
+  #theme-toggle {
+    position: absolute; top: 0; left: 0; z-index: 3;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase;
+    font-weight: 700;
+  }
+  #theme-toggle svg { width: 0.85rem; height: 0.85rem; flex: 0 0 auto; }
+  /* on small screens it sits in the flow so it can't overlap the title */
+  @media (max-width: 760px) {
+    #theme-toggle { position: static; margin: 0 auto 0.9rem; }
+  }
+
   /* the crisp lockup, top-right of the masthead.
      It sits on its OWN line (margin-left:auto pushes it right), so the
      headline below can never run underneath it at any screen width. */
@@ -754,7 +772,10 @@
      ============================================================ */
   #print-zone { display: none; }
   @media print {
-    :root {
+    /* Paper is always light. The [data-theme] half matters: the dark rule above
+       is :root[data-theme="dark"], which outranks a plain :root — without the
+       matching specificity here, a dark screen would print dark. */
+    :root, :root[data-theme] {
       --ink: #16241C; --ink-soft: #35473C; --muted: #5B6B5F;
       --ground: #fff; --surface: #fff; --surface-2: #fff; --surface-3: #F1F4EE;
       --line: #C9CFC4; --line-soft: #DDE2D8;
@@ -767,7 +788,8 @@
     body.print-mode #notice-host { display: none !important; }
     body.print-mode #print-zone { display: block; padding: 0.5rem; }
     .r-actions, .swap-hint, .swap-bar, .make-dbl, .court-tools,
-    .mv-btn, .confirm-strip, .batch-bar, .setup-buttons { display: none !important; }
+    .mv-btn, .confirm-strip, .batch-bar, .setup-buttons,
+    #theme-toggle { display: none !important; }
     .panel { border: none; box-shadow: none; padding: 0; }
     .day-scroll { max-height: none; overflow: visible; border: none; }
     .tl-head, .tl-round { position: static; }
@@ -815,8 +837,19 @@
 </head>
 <body>
 
+<script>
+/* Runs before the page paints, so a reader who chose light mode never sees a
+   flash of dark first. Dark is the default when nothing has been chosen. */
+(function () {
+  var t = "dark";
+  try { if (localStorage.getItem("sbts_theme") === "light") t = "light"; } catch (e) { /* private mode */ }
+  document.documentElement.setAttribute("data-theme", t);
+})();
+</script>
+
 <div class="page">
   <header class="masthead">
+    <button class="btn sm" id="theme-toggle" type="button" aria-live="polite"></button>
     <svg class="court-lines" viewBox="0 0 800 200" aria-hidden="true" focusable="false">
       <rect x="20" y="20" width="760" height="160" fill="none" stroke="currentColor" stroke-width="3"/>
       <line x1="400" y1="20" x2="400" y2="180" stroke="currentColor" stroke-width="3"/>
@@ -2256,6 +2289,32 @@
     window.addEventListener("resize", update);
     update();
   })();
+
+  /* ---------------- theme toggle ---------------- */
+
+  var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M20.5 14.6A8.6 8.6 0 1 1 9.4 3.5a6.8 6.8 0 0 0 11.1 11.1z"/></svg>';
+
+  /* The button says what it will DO, not what the page currently is. */
+  function paintThemeButton() {
+    var isLight = document.documentElement.getAttribute("data-theme") === "light";
+    var btn = byId("theme-toggle");
+    btn.innerHTML = isLight ? MOON + "<span>Dark mode</span>" : SUN + "<span>Light mode</span>";
+    btn.title = isLight ? "Switch to the dark board" : "Switch to the light board";
+  }
+
+  byId("theme-toggle").addEventListener("click", function () {
+    var isLight = document.documentElement.getAttribute("data-theme") === "light";
+    var next = isLight ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("sbts_theme", next); } catch (e) { /* private mode */ }
+    paintThemeButton();
+    renderWatermark();   // the blend mode differs per theme
+  });
+
+  paintThemeButton();
 
   /* ---------------- go ---------------- */
 
