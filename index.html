@@ -481,26 +481,27 @@
   .round-head .r-meta { color: var(--muted); font-size: 0.85rem; margin: 0; }
   .round-head .r-actions { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; }
 
-  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
+  /* One row per round, however many courts are on. --cols is set inline by
+     the renderer, and the gap tightens as the row fills so nine courts can
+     still breathe. Names and the ghost digit size off each court's own
+     width (cqw units), so everything scales down with the courts. */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), 1fr);
+    gap: clamp(0.4rem, calc(2.05rem - 0.17rem * var(--cols, 3)), 1.4rem);
+  }
   .board.cols-1 { grid-template-columns: minmax(0, 380px); justify-content: center; }
   .board.cols-2 { grid-template-columns: repeat(2, 1fr); }
-  .board.cols-4 { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-  .board.cols-5 { grid-template-columns: repeat(5, 1fr); gap: 0.85rem; }
-  .board.cols-6 { grid-template-columns: repeat(6, 1fr); gap: 0.75rem; }
-  .board.cols-7 { grid-template-columns: repeat(7, 1fr); gap: 0.6rem; }
-  .board.cols-8 { grid-template-columns: repeat(8, 1fr); gap: 0.55rem; }
 
-  /* 5 and 6 courts don't fit the 1180px column at a readable size, so that
-     row alone breaks out and uses the width of the screen. The negative
-     side margin is what lets a block child outgrow its centred parent —
-     it stays centred because both sides get the same margin. */
+  /* 5+ courts don't fit the 1180px column at a readable size, so those
+     rows break out and use the width of the screen. The negative side
+     margin is what lets a block child outgrow its centred parent — it
+     stays centred because both sides get the same margin. */
   .board.wide {
-    --wide: min(96vw, 1800px);
+    --wide: min(97vw, 2300px);
     width: var(--wide);
     margin-left: calc((100% - var(--wide)) / 2);
   }
-  /* 7 and 8 courts take every pixel a wide monitor offers */
-  .board.cols-7.wide, .board.cols-8.wide { --wide: min(97vw, 2300px); }
   .court-slot { text-align: center; min-width: 0; }
 
   /* The court number is painted in the middle of the court itself, like a
@@ -802,8 +803,11 @@
     .day-scroll { max-height: none; overflow: visible; border: none; }
     .tl-head, .tl-round { position: static; }
     .round-block { page-break-inside: avoid; }
-    /* the screen-filling breakout would run off the paper */
+    /* the screen-filling breakout would run off the paper — and nine
+       tiny courts across an A4 would be unreadable, so paper always
+       gets the 3-wide grid regardless of the inline court count */
     .board.wide { width: auto; margin-left: 0; }
+    .board { --cols: 3 !important; }
   }
 
   /* ============================================================
@@ -811,14 +815,14 @@
      ============================================================ */
   /* between tablet and a big monitor, 5+ across is too thin — go 3 up */
   @media (max-width: 1250px) {
-    .board.cols-5, .board.cols-6,
-    .board.cols-7, .board.cols-8 { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-    .board.wide { width: auto; margin-left: 0; }
+    .board.wide {
+      grid-template-columns: repeat(3, 1fr); gap: 1rem;
+      width: auto; margin-left: 0;
+    }
   }
   @media (max-width: 900px) {
     .page { padding: 2rem 1.1rem 6rem; }
-    .board, .board.cols-4, .board.cols-5,
-    .board.cols-6, .board.cols-7, .board.cols-8 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .board, .board.wide { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .board.cols-1 { grid-template-columns: 1fr; }
     .stat { padding: 0 1rem; }
   }
@@ -832,7 +836,7 @@
     }
   }
   @media (max-width: 560px) {
-    .board, .board.cols-4, .board.cols-2 { grid-template-columns: 1fr; }
+    .board, .board.wide, .board.cols-2 { grid-template-columns: 1fr; }
     .roster-grid { grid-template-columns: 1fr 1fr; }
     .panel { padding: 1.2rem 1rem; }
   }
@@ -1854,12 +1858,12 @@
 
   function roundCourtsHtml(r, ri) {
     var n = r.courts.length;
-    /* one row per round up to 8 courts; 5–8 also break out of the
-       page's column so they fill a landscape screen instead of shrinking */
+    /* one row per round however many courts are on; 5+ also break out
+       of the page's column so they fill a landscape screen */
     var cls = "board";
-    if (n >= 1 && n <= 8) cls += " cols-" + n;
-    if (n >= 5 && n <= 8) cls += " wide";
-    var html = '<div class="' + cls + '">';
+    if (n === 1 || n === 2) cls += " cols-" + n;
+    if (n >= 5) cls += " wide";
+    var html = '<div class="' + cls + '" style="--cols:' + n + '">';
     r.courts.forEach(function (c, ci) {
       var isS = c.type === "singles";
       /* court number in the middle of the court, with the Singles pill
