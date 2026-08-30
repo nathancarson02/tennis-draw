@@ -387,7 +387,10 @@
   .tag:hover { border-color: var(--muted); color: var(--ink); }
   .tag.status-m { background: var(--member); border-color: var(--member); color: var(--brand-ink); }
   .tag.status-v { background: var(--visitor); border-color: var(--visitor); color: #1b1206; }
-  .tag.wj.on { background: var(--ball); border-color: var(--ball); color: var(--ball-ink); }
+  /* player-type tags — used ONLY in the roster picker; the draws never show them */
+  .tag.w.on { background: var(--ball); border-color: var(--ball); color: var(--ball-ink); }
+  .tag.j.on { background: #7CC4E8; border-color: #7CC4E8; color: #0E2230; }
+  .tag.h.on { background: #E8865C; border-color: #E8865C; color: #2A1207; }
 
   .legend-row {
     display: flex; flex-wrap: wrap; gap: 1.1rem; align-items: center;
@@ -785,6 +788,7 @@
     body.print-mode .page,
     body.print-mode #quick-bar,
     body.print-mode #logo-watermark,
+    body.print-mode #event-watermark,
     body.print-mode #notice-host { display: none !important; }
     body.print-mode #print-zone { display: block; padding: 0.5rem; }
     .r-actions, .swap-hint, .swap-bar, .make-dbl, .court-tools,
@@ -846,11 +850,20 @@
     border-bottom: 3px solid;
     border-image: linear-gradient(90deg, #B31942 0 50%, #0A3161 50% 100%) 1;
   }
-  /* The event art is a photograph, not a line drawing — tile it plainly:
-     no blend mode, no brightness lift, just faded. */
-  :root.event-usa #logo-watermark { mix-blend-mode: normal; opacity: 0.20; }
-  :root[data-theme="dark"].event-usa #logo-watermark { opacity: 0.28; }
-  .event-usa #logo-watermark img { filter: none; }
+  /* The event art tiles in its OWN layer, underneath the club-logo
+     watermark (z 19 vs 20), so on an event day you get the picture with
+     the Safety Bay waves running over it. It's a photograph, so it tiles
+     plainly — no blend mode, no brightness lift, just faded. */
+  #event-watermark {
+    position: absolute; z-index: 19; pointer-events: none; user-select: none;
+    top: var(--logo-wm-top); left: 50%; transform: translateX(-50%);
+    width: min(var(--logo-wm-width), 92vw);
+    display: flex; flex-direction: column; row-gap: var(--logo-wm-gap);
+    opacity: 0.18;
+    overflow: hidden;
+  }
+  :root[data-theme="dark"] #event-watermark { opacity: 0.26; }
+  #event-watermark img { display: block; width: 100%; height: auto; flex: 0 0 auto; }
 </style>
 </head>
 <body>
@@ -900,7 +913,9 @@
     <div class="legend-row" id="roster-legend">
       <span class="key"><span class="swatch" style="background:var(--member)"></span> Member</span>
       <span class="key"><span class="swatch" style="background:var(--visitor)"></span> Visitor / non-member</span>
-      <span class="key"><span class="swatch" style="background:var(--ball)"></span> W/J — woman or junior</span>
+      <span class="key"><span class="swatch" style="background:var(--ball)"></span> W — woman</span>
+      <span class="key"><span class="swatch" style="background:#7CC4E8"></span> J — junior</span>
+      <span class="key"><span class="swatch" style="background:#E8865C"></span> H — hard hitter</span>
       <span class="key">Tick&nbsp;=&nbsp;here today</span>
     </div>
 
@@ -993,9 +1008,9 @@
       <li><strong>Tick</strong> the players who are here today, then hit <strong>Generate round</strong>.</li>
       <li>The <strong>M / V</strong> pill on each player marks <strong>member</strong> or <strong>visitor</strong>. It's a label for you at the desk — it does not change the draw.</li>
       <li><strong>Bulk add</strong> takes a whole list at once — paste names one per line or separated by commas.</li>
-      <li><strong>Select &amp; edit</strong> turns the roster into a picker: click any tiles, then mark them member/visitor, toggle W/J, tick them in, or delete the lot in one go. Nothing pops up — deletes ask once, inline, and can be undone.</li>
+      <li><strong>Select &amp; edit</strong> turns the roster into a picker: click any tiles, then mark them member/visitor, set the W&nbsp;·&nbsp;J&nbsp;·&nbsp;H tags, tick them in, or delete the lot in one go. Nothing pops up — deletes ask once, inline, and can be undone.</li>
       <li>Courts fill 4 at a time (doubles). A leftover pair becomes a <strong>singles</strong> match. Odd numbers mean someone <strong>sits</strong> — the tool rotates who, never the same person twice in a row.</li>
-      <li>The <strong>W/J</strong> button marks women &amp; juniors: the draw aims for one per side and never more than two on a court.</li>
+      <li>Each player can be tagged <strong>W</strong> (woman), <strong>J</strong> (junior) and/or <strong>H</strong> (hard hitter). The draw evens things out: women &amp; juniors get one per side and never more than two on a court; hard hitters are spread across the courts, and when two land on one court they're put on opposite sides of the net. These tags only ever show here in the roster — the draws just show names.</li>
       <li>Mixups avoid repeating <strong>partners</strong> and <strong>foursomes</strong> from earlier rounds today.</li>
       <li>Each round has two views — <strong>Courts</strong> and <strong>Table</strong> — switch with the buttons in the round header.</li>
       <li>To fix a draw by hand, <strong>click one name, then another</strong> — they swap courts. Sat-out players can be swapped in too.</li>
@@ -1014,9 +1029,8 @@
 <!-- ============================================================
      CLUB LOGO — big faded watermark
      ------------------------------------------------------------
-     STANDALONE COPY — the logo is embedded in this file, so you can
-     email it, upload it or open it anywhere on its own. There is no
-     separate image file to keep alongside it.
+     STANDALONE COPY — the logo and event art are embedded in this file,
+     so you can email it, upload it or open it anywhere on its own.
 
      The tiles below are created automatically — as the day grows and
      the page gets longer, more tiles are added to keep the pattern
@@ -1034,6 +1048,7 @@
         --logo-mark-opacity the crisp logo in the header (0–1)
         --logo-mark-width   how wide that header logo is
      ============================================================ -->
+<div id="event-watermark" aria-hidden="true"></div>
 <div id="logo-watermark" aria-hidden="true"></div>
 
 <script>
@@ -1041,10 +1056,6 @@
   "use strict";
 
   var LS_KEY = "sbts_draws_v1";
-
-  /* The club logo and event art are embedded in this file, so this page
-     works anywhere on its own with nothing beside it. */
-  var LOGO_SRC = document.querySelector(".masthead-mark").src;
 
   /* Whatever day it actually is when the page is opened — the socials aren't
      always on a Sunday, so the heading, the tab title and the printed
@@ -1067,6 +1078,9 @@
   var EVENT_ON = localDateKey(new Date()) === EVENT.date;
   if (EVENT_ON) document.documentElement.classList.add("event-usa");
 
+  /* the club logo file (STANDALONE-BUILD swaps this for an embedded copy) */
+  var LOGO_FILE = document.querySelector(".masthead-mark").src;   // reuse the embedded copy
+
   var DEFAULT_NAMES = [
     "Brodie","Byron","Chris","Clint","Damen","Dave","Dean","Jan","Janine","Jaxon",
     "Joan","Josh","Kim","Lucas","Madi","Marco","Marty","Mie","Nathan","Natalie",
@@ -1088,7 +1102,7 @@
     } catch (e) { /* fresh start */ }
     var s = { nextId: 1, roster: [], rounds: [], courtsText: "1,2,3,4,5,6", viewMode: "courts", dayView: "timeline" };
     DEFAULT_NAMES.forEach(function (n) {
-      s.roster.push({ id: s.nextId++, name: n, wj: false, playing: false, member: true });
+      s.roster.push({ id: s.nextId++, name: n, w: false, j: false, h: false, playing: false, member: true });
     });
     return s;
   }
@@ -1101,7 +1115,11 @@
     if (!s.rounds) s.rounds = [];
     s.roster.forEach(function (p) {
       if (p.member === undefined) p.member = true;   // everyone already on the books = member
-      if (p.wj === undefined) p.wj = false;
+      /* the old single W/J flag becomes the Woman tag; re-tag juniors by hand */
+      if (p.w === undefined) p.w = !!p.wj;
+      if (p.j === undefined) p.j = false;
+      if (p.h === undefined) p.h = false;
+      delete p.wj;
       if (p.playing === undefined) p.playing = false;
     });
     return s;
@@ -1260,7 +1278,7 @@
     return cands.slice(0, count);
   }
 
-  function scoreDraw(courts, hist, wjSet) {
+  function scoreDraw(courts, hist, softSet, hardSet) {
     var s = 0;
     courts.forEach(function (c) {
       if (c.type === "doubles") {
@@ -1271,22 +1289,38 @@
         });
         var four = c.teamA.concat(c.teamB).slice().sort(function (x, y) { return x - y; }).join(",");
         s += 150 * (hist.foursomes[four] || 0);
-        var wjA = c.teamA.filter(function (id) { return wjSet[id]; }).length;
-        var wjB = c.teamB.filter(function (id) { return wjSet[id]; }).length;
+
+        /* women & juniors: at most two per court, one per side where possible */
+        var wjA = c.teamA.filter(function (id) { return softSet[id]; }).length;
+        var wjB = c.teamB.filter(function (id) { return softSet[id]; }).length;
         var wjTotal = wjA + wjB;
         if (wjTotal > 2) s += 400 * (wjTotal - 2);
         if (wjTotal === 2 && (wjA === 2 || wjB === 2)) s += 60;
+
+        /* hard hitters: same idea — spread them across courts, and when a
+           court gets two, put them on OPPOSITE sides of the net so the
+           power faces power rather than stacking on one team */
+        var hA = c.teamA.filter(function (id) { return hardSet[id]; }).length;
+        var hB = c.teamB.filter(function (id) { return hardSet[id]; }).length;
+        var hTotal = hA + hB;
+        if (hTotal > 2) s += 250 * (hTotal - 2);
+        if (hTotal === 2 && (hA === 2 || hB === 2)) s += 80;
       } else {
         s += 12 * (hist.opponents[pairKey(c.teamA[0], c.teamB[0])] || 0);
         s += 35 * ((hist.singles[c.teamA[0]] || 0) + (hist.singles[c.teamB[0]] || 0));
+        /* a hard hitter against someone who isn't one is a lopsided singles */
+        if (!!hardSet[c.teamA[0]] !== !!hardSet[c.teamB[0]]) s += 45;
       }
     });
     return s;
   }
 
   function generateDraw(pool, labels, shape, hist, pin) {
-    var wjSet = {};
-    state.roster.forEach(function (p) { if (p.wj) wjSet[p.id] = true; });
+    var softSet = {}, hardSet = {};
+    state.roster.forEach(function (p) {
+      if (p.w || p.j) softSet[p.id] = true;
+      if (p.h) hardSet[p.id] = true;
+    });
 
     var pinActive = pin && pool.indexOf(pin[0]) !== -1 && pool.indexOf(pin[1]) !== -1 && shape.doubles > 0;
     var best = null, bestScore = Infinity;
@@ -1321,7 +1355,7 @@
         courts.push({ label: labels[li++], type: "singles", teamA: [arr[k++]], teamB: [arr[k++]] });
       }
 
-      var sc = scoreDraw(courts, hist, wjSet);
+      var sc = scoreDraw(courts, hist, softSet, hardSet);
       if (sc < bestScore) { bestScore = sc; best = courts; if (sc === 0) break; }
     }
     return best;
@@ -1612,8 +1646,10 @@
       '<span class="divider"></span>' +
       '<button class="btn sm" data-do="member">Mark member</button>' +
       '<button class="btn sm" data-do="visitor">Mark visitor</button>' +
-      '<button class="btn sm" data-do="wj-on">W/J on</button>' +
-      '<button class="btn sm" data-do="wj-off">W/J off</button>' +
+      '<button class="btn sm" data-do="w">Woman</button>' +
+      '<button class="btn sm" data-do="j">Junior</button>' +
+      '<button class="btn sm" data-do="h">Hard hitter</button>' +
+      '<button class="btn sm" data-do="tags-off">Clear W·J·H</button>' +
       '<span class="divider"></span>' +
       '<button class="btn sm" data-do="tick-in">Tick in</button>' +
       '<button class="btn sm" data-do="tick-out">Untick</button>' +
@@ -1639,8 +1675,10 @@
         clearConfirms();
         if (m === "member")   { var a = applyToSelected(function (p) { p.member = true; });  if (a) toast(plural(a, "player") + " marked as members."); }
         if (m === "visitor")  { var c = applyToSelected(function (p) { p.member = false; }); if (c) toast(plural(c, "player") + " marked as visitors."); }
-        if (m === "wj-on")    { applyToSelected(function (p) { p.wj = true; }); }
-        if (m === "wj-off")   { applyToSelected(function (p) { p.wj = false; }); }
+        if (m === "w")        { applyToSelected(function (p) { p.w = true; }); }
+        if (m === "j")        { applyToSelected(function (p) { p.j = true; }); }
+        if (m === "h")        { applyToSelected(function (p) { p.h = true; }); }
+        if (m === "tags-off") { applyToSelected(function (p) { p.w = false; p.j = false; p.h = false; }); }
         if (m === "tick-in")  { applyToSelected(function (p) { p.playing = true; }); }
         if (m === "tick-out") { applyToSelected(function (p) { p.playing = false; }); }
         if (m === "delete")   { deleteSelected(); }
@@ -1690,18 +1728,26 @@
         save(); renderRoster(); renderStats();
       });
 
-      var wj = document.createElement("button");
-      wj.className = "tag wj" + (p.wj ? " on" : "");
-      wj.textContent = "W/J";
-      wj.title = "Mark as woman/junior for court balancing";
-      wj.addEventListener("click", function () {
-        p.wj = !p.wj;
-        wj.className = "tag wj" + (p.wj ? " on" : "");
-        save();
-      });
+      /* player-type toggles — roster only; the draws never show these */
+      function typeTag(key, label, title) {
+        var t = document.createElement("button");
+        t.className = "tag " + key + (p[key] ? " on" : "");
+        t.textContent = label;
+        t.title = title;
+        t.addEventListener("click", function () {
+          p[key] = !p[key];
+          t.className = "tag " + key + (p[key] ? " on" : "");
+          save();
+        });
+        return t;
+      }
+      var tw = typeTag("w", "W", "Woman — balanced across courts and sides");
+      var tj = typeTag("j", "J", "Junior — balanced across courts and sides");
+      var th = typeTag("h", "H", "Hard hitter — spread out, power faces power");
 
       row.appendChild(mark);
-      row.appendChild(cb); row.appendChild(nm); row.appendChild(st); row.appendChild(wj);
+      row.appendChild(cb); row.appendChild(nm); row.appendChild(st);
+      row.appendChild(tw); row.appendChild(tj); row.appendChild(th);
 
       if (manageMode) {
         row.addEventListener("click", function () {
@@ -2096,24 +2142,29 @@
 
   /* ---------------- tiled logo watermark ---------------- */
 
-  function makeLogoTile() {
+  function makeTile(src) {
     var img = document.createElement("img");
-    img.src = EVENT_ON ? EVENT.art : LOGO_SRC;
+    img.src = src;
     img.alt = "";
     return img;
   }
 
-  /* Lays enough copies of the logo down the page to reach the bottom.
-     Called again whenever the page grows (new round) or the window
+  /* Lays enough copies of one image down a host to reach the bottom of the
+     page. Called again whenever the page grows (new round) or the window
      resizes, so the pattern always runs the full length. */
-  function renderWatermark() {
-    var host = byId("logo-watermark");
+  function renderWatermarkHost(host, src) {
     var page = document.querySelector(".page");
     if (!host || !page) return;
 
+    if (!src) {                            // this layer is off today
+      host.innerHTML = "";
+      host.style.height = "0px";
+      return;
+    }
+
     if (!host.children.length) {
-      var first = makeLogoTile();
-      // nothing can be measured until the PNG has actually loaded
+      var first = makeTile(src);
+      // nothing can be measured until the image has actually loaded
       first.addEventListener("load", renderWatermark);
       host.appendChild(first);
     }
@@ -2131,10 +2182,17 @@
     var needed = Math.max(pageBottom, window.innerHeight) - start;
     var want = Math.max(1, Math.ceil(needed / (tileH + gap)));
 
-    while (host.children.length < want) host.appendChild(makeLogoTile());
+    while (host.children.length < want) host.appendChild(makeTile(src));
     while (host.children.length > want) host.removeChild(host.lastChild);
 
     host.style.height = needed + "px";     // trims the overhanging last tile
+  }
+
+  /* Two layers: the club logo always tiles (its usual look), and on an event
+     day the event art tiles UNDERNEATH it — logo waves over the picture. */
+  function renderWatermark() {
+    renderWatermarkHost(byId("logo-watermark"), LOGO_FILE);
+    renderWatermarkHost(byId("event-watermark"), EVENT_ON ? EVENT.art : null);
   }
 
   /* ---------------- render all ---------------- */
@@ -2156,7 +2214,7 @@
     zone.innerHTML = "";
     var head = document.createElement("div");
     head.className = "print-head";
-    head.innerHTML = '<img class="print-logo" src="' + LOGO_SRC + '" alt="">' +
+    head.innerHTML = '<img class="print-logo" src="' + LOGO_FILE + '" alt="">' +
       '<p class="eyebrow">Safety Bay Tennis Club · ' + esc(EVENT_ON ? EVENT.title : DAY_WORD + " Socials") + "</p>";
     zone.appendChild(head);
     zone.appendChild(el.cloneNode(true));
@@ -2179,7 +2237,7 @@
     if (!v) return;
     var dup = state.roster.some(function (p) { return p.name.toLowerCase() === v.toLowerCase(); });
     if (dup) { toast('"' + v + '" is already on the roster — not added again.', "warn"); return; }
-    state.roster.push({ id: state.nextId++, name: v, wj: false, playing: true, member: true });
+    state.roster.push({ id: state.nextId++, name: v, w: false, j: false, h: false, playing: true, member: true });
     sortRoster();
     inp.value = "";
     save(); renderAll();
@@ -2222,7 +2280,7 @@
       var key = n.toLowerCase();
       if (existing[key]) { skipped.push(n); return; }
       existing[key] = true;
-      state.roster.push({ id: state.nextId++, name: n, wj: false, playing: tickIn, member: !asVisitor });
+      state.roster.push({ id: state.nextId++, name: n, w: false, j: false, h: false, playing: tickIn, member: !asVisitor });
       added++;
     });
 
