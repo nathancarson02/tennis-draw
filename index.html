@@ -487,6 +487,8 @@
   .board.cols-4 { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
   .board.cols-5 { grid-template-columns: repeat(5, 1fr); gap: 0.85rem; }
   .board.cols-6 { grid-template-columns: repeat(6, 1fr); gap: 0.75rem; }
+  .board.cols-7 { grid-template-columns: repeat(7, 1fr); gap: 0.6rem; }
+  .board.cols-8 { grid-template-columns: repeat(8, 1fr); gap: 0.55rem; }
 
   /* 5 and 6 courts don't fit the 1180px column at a readable size, so that
      row alone breaks out and uses the width of the screen. The negative
@@ -497,6 +499,8 @@
     width: var(--wide);
     margin-left: calc((100% - var(--wide)) / 2);
   }
+  /* 7 and 8 courts take every pixel a wide monitor offers */
+  .board.cols-7.wide, .board.cols-8.wide { --wide: min(97vw, 2300px); }
   .court-slot { text-align: center; min-width: 0; }
 
   /* The court number is painted in the middle of the court itself, like a
@@ -805,15 +809,16 @@
   /* ============================================================
      15. RESPONSIVE
      ============================================================ */
-  /* between tablet and a big monitor, 5–6 across is too thin — go 3 up */
+  /* between tablet and a big monitor, 5+ across is too thin — go 3 up */
   @media (max-width: 1250px) {
-    .board.cols-5, .board.cols-6 { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .board.cols-5, .board.cols-6,
+    .board.cols-7, .board.cols-8 { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
     .board.wide { width: auto; margin-left: 0; }
   }
   @media (max-width: 900px) {
     .page { padding: 2rem 1.1rem 6rem; }
-    .board, .board.cols-4,
-    .board.cols-5, .board.cols-6 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .board, .board.cols-4, .board.cols-5,
+    .board.cols-6, .board.cols-7, .board.cols-8 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .board.cols-1 { grid-template-columns: 1fr; }
     .stat { padding: 0 1rem; }
   }
@@ -1849,11 +1854,11 @@
 
   function roundCourtsHtml(r, ri) {
     var n = r.courts.length;
-    /* one row per round up to 6 courts; 5 and 6 also break out of the
+    /* one row per round up to 8 courts; 5–8 also break out of the
        page's column so they fill a landscape screen instead of shrinking */
     var cls = "board";
-    if (n >= 1 && n <= 6) cls += " cols-" + n;
-    if (n >= 5 && n <= 6) cls += " wide";
+    if (n >= 1 && n <= 8) cls += " cols-" + n;
+    if (n >= 5 && n <= 8) cls += " wide";
     var html = '<div class="' + cls + '">';
     r.courts.forEach(function (c, ci) {
       var isS = c.type === "singles";
