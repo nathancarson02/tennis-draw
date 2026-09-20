@@ -1090,11 +1090,16 @@
   /* the club logo file (STANDALONE-BUILD swaps this for an embedded copy) */
   var LOGO_FILE = document.querySelector(".masthead-mark").src;   // reuse the embedded copy
 
+  /* The club roster as of 20 Sep 2026 — recovered from Nathan's own saved
+     copy, so a fresh device starts with the real names. (A browser that has
+     already used the page keeps its own saved roster; this list is only the
+     starting point for new ones.) */
   var DEFAULT_NAMES = [
-    "Brodie","Byron","Chris","Clint","Damen","Dave","Dean","Jan","Janine","Jaxon",
-    "Joan","Josh","Kim","Lucas","Madi","Marco","Marty","Mie","Nathan","Natalie",
-    "Ray","Richard","Rob","Rory","Shane","Simone","Steve","Steve C","Steve M",
-    "Terri","Terry","Tom","Tony","Trevor","Will"
+    "Bill","Brodie","Byron","Cam","Chris","Clint","Damen","Dave","Dean","Efrain",
+    "Jakeb","Jan","Janine","Jaxon","Joan","Josh","Kam","Karlene","Kim","Lisa",
+    "Lucas","Madi","Marco C","Marco V","Mark","Marty","Michael L","Mie","Natalie",
+    "Nathan","Nicola","Ray","Richard","Rob","Rory","Rowan","Shane","Simone",
+    "Steve","Steve C","Steve M","Terri","Terry","Tom","Tony","Trevor","Will"
   ];
 
   var state = load();
