@@ -337,15 +337,18 @@
   /* ============================================================
      7. ROSTER
      ============================================================ */
+  /* Column minimum is sized so a full name fits BESIDE the four tag chips —
+     at 205px the chips left ~40px of name ("Mic…"). Never shrink this
+     without re-checking the longest names (Michael L, Marco C, Karlene). */
   .roster-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr));
     gap: 0.5rem;
   }
   .player {
     position: relative;
-    display: flex; align-items: center; gap: 0.5rem;
+    display: flex; align-items: center; gap: 0.38rem;
     border: 1px solid var(--line); border-radius: var(--r-sm);
-    padding: 0.42rem 0.55rem 0.42rem 0.7rem;
+    padding: 0.42rem 0.5rem 0.42rem 0.65rem;
     background: var(--surface-2);
     transition: background 0.15s ease, border-color 0.15s ease;
   }
@@ -369,7 +372,9 @@
   .player.visitor input[type="checkbox"] { accent-color: var(--visitor); }
 
   .player .pname {
-    flex: 1; min-width: 0; font-weight: 700; font-size: 0.94rem;
+    /* the name never gives up more than this to the chips — chips are
+       fixed-size, so this floor is what keeps "Michael L" readable */
+    flex: 1; min-width: 5.2rem; font-weight: 700; font-size: 0.94rem;
     border: none; background: transparent; color: var(--ink);
     font-family: inherit; padding: 0.12rem 0.2rem; border-radius: var(--r-xs);
     text-overflow: ellipsis;
@@ -379,8 +384,8 @@
 
   .tag {
     flex: 0 0 auto; font-family: var(--font-mono);
-    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.09em;
-    padding: 0.2rem 0.36rem; border-radius: var(--r-xs); cursor: pointer;
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.03em;
+    padding: 0.18rem 0.27rem; border-radius: var(--r-xs); cursor: pointer;
     border: 1px solid var(--line); background: transparent; color: var(--muted);
     line-height: 1.2; transition: all 0.15s ease;
   }
@@ -837,7 +842,9 @@
   }
   @media (max-width: 560px) {
     .board, .board.wide, .board.cols-2 { grid-template-columns: 1fr; }
-    .roster-grid { grid-template-columns: 1fr 1fr; }
+    /* two phone-width columns can't fit name + four chips — one readable
+       column beats two truncated ones */
+    .roster-grid { grid-template-columns: 1fr; }
     .panel { padding: 1.2rem 1rem; }
   }
   @media (max-width: 420px) {
