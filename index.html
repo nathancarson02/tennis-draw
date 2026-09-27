@@ -607,12 +607,12 @@
     position: relative; z-index: 21;          /* above the logo watermark */
     --wide: min(97vw, 2300px);
     width: var(--wide); margin-left: calc((100% - var(--wide)) / 2);
-    padding: 1rem 1.1rem 1.1rem 3rem;
+    padding: 1rem 3rem 1.1rem 1.1rem;   /* room on the right for the car-park label */
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
   }
   .site-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(0.4rem, 1vw, 0.9rem); }
-  /* the top block of four sits over courts 3–6 of the bottom row, as on the ground */
-  .site-row.top > .court-slot:first-child { grid-column: 3; }
+  /* the block of four sits under courts 6–3 of the long row, as on the ground */
+  .site-row.bottom > .court-slot:first-child { grid-column: 2; }
   .site-club {
     display: flex; align-items: center; justify-content: center; gap: 0.6rem;
     margin: 0.8rem 0; height: 2.2rem; border-radius: var(--r-sm);
@@ -623,12 +623,12 @@
   }
   .site-club::before, .site-club::after { content: ""; flex: 0 0 0.45rem; height: 0.45rem; border-radius: 50%; background: #C9C3B3; }
   .site-edge {
-    position: absolute; left: 0.5rem; top: 50%;
-    transform: rotate(-90deg) translateX(-50%); transform-origin: left top;
+    position: absolute; right: 0.5rem; top: 50%;
+    transform: rotate(90deg) translateX(-50%); transform-origin: right top;
     white-space: nowrap; font-family: var(--font-mono); font-size: 0.58rem;
     letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
   }
-  .site-compass { position: absolute; right: 0.9rem; top: 0.6rem; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; color: var(--muted); }
+  .site-compass { position: absolute; left: 0.9rem; top: 0.6rem; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; color: var(--muted); }
   .site-compass b { color: var(--ball); }
   /* court numbers that aren't on the map (e.g. "A") go in a spare row underneath */
   .site-row.extra { margin-top: 0.8rem; grid-template-columns: repeat(7, 1fr); }
@@ -657,7 +657,7 @@
   }
   .court-picker .pc:hover { border-style: solid; color: var(--ink); }
   .court-picker .pc.on { background: var(--court-fill); border: 1.5px solid var(--brand); color: #fff; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .court-picker .pc.top1 { grid-column: 3; }
+  .court-picker .pc.short1 { grid-column: 2; }
   .court-picker .pclub { grid-column: 1 / -1; height: 0.9rem; border-radius: 2px; background: #F3F1EA; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .court-picker.static { pointer-events: none; grid-template-columns: repeat(7, 1.1rem); gap: 0.15rem; padding: 0.35rem; }
   .court-picker.static .pc { font-size: 0.5rem; border-width: 1px; }
@@ -901,7 +901,7 @@
        courts are on. The closed courts and the map furniture drop out. */
     .site-board { width: auto; margin-left: 0; padding: 0; border: none; background: none; }
     .site-row, .site-row.top { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-    .site-row.top > .court-slot:first-child { grid-column: auto; }
+    .site-row.bottom > .court-slot:first-child { grid-column: auto; }
     .site-row.top:empty, .site-row.bottom:empty { display: none; }
     .court-slot.off, .site-edge, .site-compass, .site-club, .arrived, .r-toggle { display: none !important; }
     .site-row.bottom { margin-top: 1rem; }
@@ -915,20 +915,20 @@
   @media (max-width: 1250px) {
     /* the map keeps its shape, the courts just get smaller (names and the
        ghost digit size off the court, so they shrink with it) */
-    .site-board { width: auto; margin-left: 0; padding-left: 2.4rem; }
+    .site-board { width: auto; margin-left: 0; padding-right: 2.4rem; }
   }
   @media (max-width: 900px) {
     .page { padding: 2rem 1.1rem 6rem; }
     /* each site row scrolls sideways rather than wrapping — wrapping would
        break the map. Closed courts slim down so the open ones get the room. */
-    .site-board { padding-left: 1rem; }
+    .site-board { padding-right: 1rem; }
     .site-edge { display: none; }
     .site-row { display: flex; overflow-x: auto; gap: 0.6rem; padding-bottom: 0.4rem; scroll-snap-type: x proximity; }
     .site-row > .court-slot { flex: 0 0 min(46vw, 210px); scroll-snap-align: start; }
     .site-row > .court-slot.off { flex-basis: 3.2rem; }
     .site-row > .court-slot.off .court-no-mark { font-size: 1rem; }
     .site-row > .court-slot.off .off-tag { display: none; }
-    .site-row.top > .court-slot:first-child { grid-column: auto; }
+    .site-row.bottom > .court-slot:first-child { grid-column: auto; }
     .stat { padding: 0 1rem; }
   }
   /* on narrow screens the header logo drops out of the corner and
@@ -1215,14 +1215,16 @@
   /* the club logo file (STANDALONE-BUILD swaps this for an embedded copy) */
   var LOGO_FILE = document.querySelector(".masthead-mark").src;   // reuse the embedded copy
 
-  /* ---- THE CLUB, TOP-DOWN (north up) -------------------------------
+  /* ---- THE CLUB, TOP-DOWN (SOUTH up — the satellite view turned 180°) --
      Two rows of courts with the clubhouse between them. Left to right:
-     8–11 along the top (north) fence, 1–7 along the bottom (south) fence.
-     The car park and Royal Rd are off the LEFT edge. If a court is ever
-     renumbered, change it here and the board and the picker follow. */
+     7–1 along the top (south) fence, 11–8 along the bottom (north) fence.
+     The car park and Royal Rd are off the RIGHT edge. Nathan asked for it
+     this way round (27 Sep 2026). If a court is ever renumbered, change it
+     here and the board and the picker follow. The short row sits under
+     courts 6–3, i.e. columns 2–5 (see .site-row.bottom / .pc.short1). */
   var SITE = {
-    top: ["8", "9", "10", "11"],
-    bottom: ["1", "2", "3", "4", "5", "6", "7"]
+    top: ["7", "6", "5", "4", "3", "2", "1"],
+    bottom: ["11", "10", "9", "8"]
   };
   var SITE_ALL = SITE.top.concat(SITE.bottom);
   /* where a court label sits in "walking order" (1,2,…,11); labels that
@@ -1415,14 +1417,14 @@
   function miniMapHtml(open, isStatic) {
     function cell(label, first) {
       var on = open.indexOf(label) >= 0;
-      return '<button type="button" class="pc' + (on ? " on" : "") + (first ? " top1" : "") +
+      return '<button type="button" class="pc' + (on ? " on" : "") + (first ? " short1" : "") +
         '" data-court="' + esc(label) + '" aria-pressed="' + (on ? "true" : "false") +
         '" title="Court ' + esc(label) + (on ? " — open" : " — closed") + '">' + esc(label) + "</button>";
     }
     var html = '<div class="court-picker' + (isStatic ? " static" : "") + '"' + (isStatic ? ' aria-hidden="true"' : "") + ">";
-    SITE.top.forEach(function (l, i) { html += cell(l, i === 0); });
+    SITE.top.forEach(function (l) { html += cell(l, false); });
     html += '<div class="pclub" title="Clubhouse"></div>';
-    SITE.bottom.forEach(function (l) { html += cell(l, false); });
+    SITE.bottom.forEach(function (l, i) { html += cell(l, i === 0); });
     html += "</div>";
     return html;
   }
@@ -2151,7 +2153,7 @@
     }
     var html = '<div class="site-board">' +
       '<span class="site-edge" aria-hidden="true">Car park · Royal Rd</span>' +
-      '<span class="site-compass" aria-hidden="true"><b>N</b> ↑</span>' +
+      '<span class="site-compass" aria-hidden="true"><b>N</b> ↓</span>' +
       '<div class="site-row top">' + SITE.top.map(slot).join("") + "</div>" +
       '<div class="site-club">Clubhouse</div>' +
       '<div class="site-row bottom">' + SITE.bottom.map(slot).join("") + "</div>";
