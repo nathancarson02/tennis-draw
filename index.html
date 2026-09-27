@@ -59,7 +59,7 @@
     --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Courier New", monospace;
 
     /* ---- LOGO KNOBS — tweak these numbers, nothing else ----
-       (this is the STANDALONE copy — the logo is embedded inside it)  */
+       (this is the STANDALONE copy - the logo is embedded inside it)  */
     --logo-wm-opacity: 0.17;    /* tiled watermark: 0 = off, 1 = solid   */
     --logo-wm-blend: multiply;  /* light page: tint DOWN, paper stays white */
     --logo-wm-lift: none;       /* extra brightness for the logo strokes  */
@@ -486,27 +486,9 @@
   .round-head .r-meta { color: var(--muted); font-size: 0.85rem; margin: 0; }
   .round-head .r-actions { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; }
 
-  /* One row per round, however many courts are on. --cols is set inline by
-     the renderer, and the gap tightens as the row fills so nine courts can
-     still breathe. Names and the ghost digit size off each court's own
-     width (cqw units), so everything scales down with the courts. */
-  .board {
-    display: grid;
-    grid-template-columns: repeat(var(--cols, 3), 1fr);
-    gap: clamp(0.4rem, calc(2.05rem - 0.17rem * var(--cols, 3)), 1.4rem);
-  }
-  .board.cols-1 { grid-template-columns: minmax(0, 380px); justify-content: center; }
-  .board.cols-2 { grid-template-columns: repeat(2, 1fr); }
-
-  /* 5+ courts don't fit the 1180px column at a readable size, so those
-     rows break out and use the width of the screen. The negative side
-     margin is what lets a block child outgrow its centred parent — it
-     stays centred because both sides get the same margin. */
-  .board.wide {
-    --wide: min(97vw, 2300px);
-    width: var(--wide);
-    margin-left: calc((100% - var(--wide)) / 2);
-  }
+  /* The courts are laid out by the site map (section 9b below). Names and
+     the ghost digit size off each court's own width (cqw units), so
+     everything scales down with the courts. */
   .court-slot { text-align: center; min-width: 0; }
 
   /* The court number is painted in the middle of the court itself, like a
@@ -612,6 +594,106 @@
   .swap-hint { font-size: 0.81rem; color: var(--muted); font-style: italic; margin: 0.8rem 0 0; }
 
   /* ============================================================
+     9b. SITE MAP — the board is drawn as the club really is
+     ------------------------------------------------------------
+     Top-down, north up: courts 8–11 along the top (north) fence,
+     the white clubhouse in the middle, courts 1–7 along the bottom
+     (south) fence, car park + Royal Rd off to the left. Courts that
+     aren't open today stay on the map as dashed outlines so court 3
+     is ALWAYS in the same place on screen as it is on the ground.
+     Which court sits where is the SITE constant in the script.
+     ============================================================ */
+  .site-board {
+    position: relative; z-index: 21;          /* above the logo watermark */
+    --wide: min(97vw, 2300px);
+    width: var(--wide); margin-left: calc((100% - var(--wide)) / 2);
+    padding: 1rem 1.1rem 1.1rem 3rem;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  }
+  .site-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(0.4rem, 1vw, 0.9rem); }
+  /* the top block of four sits over courts 3–6 of the bottom row, as on the ground */
+  .site-row.top > .court-slot:first-child { grid-column: 3; }
+  .site-club {
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    margin: 0.8rem 0; height: 2.2rem; border-radius: var(--r-sm);
+    background: #F3F1EA; color: #2B2A26;
+    font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    print-color-adjust: exact; -webkit-print-color-adjust: exact;
+  }
+  .site-club::before, .site-club::after { content: ""; flex: 0 0 0.45rem; height: 0.45rem; border-radius: 50%; background: #C9C3B3; }
+  .site-edge {
+    position: absolute; left: 0.5rem; top: 50%;
+    transform: rotate(-90deg) translateX(-50%); transform-origin: left top;
+    white-space: nowrap; font-family: var(--font-mono); font-size: 0.58rem;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+  }
+  .site-compass { position: absolute; right: 0.9rem; top: 0.6rem; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; color: var(--muted); }
+  .site-compass b { color: var(--ball); }
+  /* court numbers that aren't on the map (e.g. "A") go in a spare row underneath */
+  .site-row.extra { margin-top: 0.8rem; grid-template-columns: repeat(7, 1fr); }
+  /* a court that isn't open today */
+  .court-viz.off { background: transparent; box-shadow: none; border: 1.5px dashed color-mix(in srgb, var(--ink) 22%, transparent); }
+  .court-viz.off svg.lines { opacity: 0.18; }
+  .court-viz.off .court-no-mark { color: color-mix(in srgb, var(--ink) 28%, transparent); font-size: 40cqw; }
+  .court-viz.off .off-tag {
+    position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .court-slot.off .court-tools { visibility: hidden; }
+
+  /* setup: tap the courts that are open today on a mini map */
+  .court-picker {
+    display: inline-grid; grid-template-columns: repeat(7, 2.5rem); gap: 0.3rem;
+    padding: 0.7rem; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md);
+  }
+  .court-picker .pc {
+    aspect-ratio: 4 / 5; border-radius: var(--r-xs); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font: inherit; font-family: var(--font-mono); font-weight: 800; font-size: 0.95rem;
+    border: 1.5px dashed color-mix(in srgb, var(--ink) 25%, transparent);
+    background: transparent; color: var(--muted); padding: 0;
+  }
+  .court-picker .pc:hover { border-style: solid; color: var(--ink); }
+  .court-picker .pc.on { background: var(--court-fill); border: 1.5px solid var(--brand); color: #fff; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .court-picker .pc.top1 { grid-column: 3; }
+  .court-picker .pclub { grid-column: 1 / -1; height: 0.9rem; border-radius: 2px; background: #F3F1EA; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .court-picker.static { pointer-events: none; grid-template-columns: repeat(7, 1.1rem); gap: 0.15rem; padding: 0.35rem; }
+  .court-picker.static .pc { font-size: 0.5rem; border-width: 1px; }
+  .court-picker.static .pclub { height: 0.35rem; }
+  .picker-foot { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; margin-top: 0.5rem; font-size: 0.82rem; color: var(--muted); }
+  .picker-foot .linkish { background: none; border: none; padding: 0; font: inherit; color: var(--brand); cursor: pointer; text-decoration: underline; }
+  #courts-typed { display: none; margin-top: 0.5rem; }
+  #courts-typed.show { display: flex; gap: 0.5rem; align-items: center; }
+
+  /* the round's own "Arrived after the draw" strip */
+  .arrived {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    margin-top: 1rem; padding: 0.7rem 0.9rem;
+    background: var(--surface-2); border: 1px solid var(--visitor); border-left-width: 4px;
+    border-radius: var(--r-sm); font-size: 0.9rem;
+  }
+  .arrived .lbl { color: var(--visitor); font-weight: 700; margin-right: 0.3rem; }
+  .arrived .who {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: var(--visitor-tint); border: 1px solid color-mix(in srgb, var(--visitor) 55%, transparent);
+    border-radius: var(--r-sm); padding: 0.22rem 0.3rem 0.22rem 0.6rem; font-weight: 700;
+  }
+  /* sitting-out names get a plate like the court names, in amber */
+  .byes-note .p-name.sit-plate {
+    display: inline-block; background: var(--visitor-tint); border: 1px solid var(--visitor);
+    color: var(--ink); font-weight: 800; padding: 0.12em 0.5em; margin: 0.15rem 0.3rem 0.15rem 0;
+  }
+  .byes-note .p-name.sit-plate.selected { background: var(--ball); color: var(--ball-ink); }
+
+  /* older rounds fold up to one line so the current round is never far away */
+  .round-block .r-toggle { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; }
+  .round-block.collapsed .r-body { display: none; }
+  .round-block.collapsed .round-head { margin-bottom: 0; }
+  .round-block.collapsed { padding-top: 0.9rem; padding-bottom: 0.9rem; }
+
+  /* ============================================================
      10. WHOLE DAY — top-down timeline + table
      ============================================================ */
   .day-scroll {
@@ -707,6 +789,12 @@
   #quick-bar .qb-info { font-size: 0.86rem; color: var(--ink-soft); }
   #quick-bar .qb-info b { color: var(--brand); }
   #quick-bar .spacer { flex: 1; }
+  /* "someone walked in" — always to hand, wherever you've scrolled to */
+  #quick-bar #qb-walkin {
+    font: inherit; font-size: 0.9rem; min-width: 15rem;
+    padding: 0.45rem 0.7rem; border-radius: var(--r-sm);
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+  }
 
   /* ============================================================
      12. HELP
@@ -808,27 +896,39 @@
     .day-scroll { max-height: none; overflow: visible; border: none; }
     .tl-head, .tl-round { position: static; }
     .round-block { page-break-inside: avoid; }
-    /* the screen-filling breakout would run off the paper — and nine
-       tiny courts across an A4 would be unreadable, so paper always
-       gets the 3-wide grid regardless of the inline court count */
-    .board.wide { width: auto; margin-left: 0; }
-    .board { --cols: 3 !important; }
+    /* the site map is 7 wide — on paper the open courts go 3-up in court
+       order instead, with a thumbnail map in the header saying which
+       courts are on. The closed courts and the map furniture drop out. */
+    .site-board { width: auto; margin-left: 0; padding: 0; border: none; background: none; }
+    .site-row, .site-row.top { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .site-row.top > .court-slot:first-child { grid-column: auto; }
+    .site-row.top:empty, .site-row.bottom:empty { display: none; }
+    .court-slot.off, .site-edge, .site-compass, .site-club, .arrived, .r-toggle { display: none !important; }
+    .site-row.bottom { margin-top: 1rem; }
+    .round-block.collapsed .r-body { display: block; }
+    .print-head .court-picker { margin-left: auto; }
   }
 
   /* ============================================================
      15. RESPONSIVE
      ============================================================ */
-  /* between tablet and a big monitor, 5+ across is too thin — go 3 up */
   @media (max-width: 1250px) {
-    .board.wide {
-      grid-template-columns: repeat(3, 1fr); gap: 1rem;
-      width: auto; margin-left: 0;
-    }
+    /* the map keeps its shape, the courts just get smaller (names and the
+       ghost digit size off the court, so they shrink with it) */
+    .site-board { width: auto; margin-left: 0; padding-left: 2.4rem; }
   }
   @media (max-width: 900px) {
     .page { padding: 2rem 1.1rem 6rem; }
-    .board, .board.wide { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-    .board.cols-1 { grid-template-columns: 1fr; }
+    /* each site row scrolls sideways rather than wrapping — wrapping would
+       break the map. Closed courts slim down so the open ones get the room. */
+    .site-board { padding-left: 1rem; }
+    .site-edge { display: none; }
+    .site-row { display: flex; overflow-x: auto; gap: 0.6rem; padding-bottom: 0.4rem; scroll-snap-type: x proximity; }
+    .site-row > .court-slot { flex: 0 0 min(46vw, 210px); scroll-snap-align: start; }
+    .site-row > .court-slot.off { flex-basis: 3.2rem; }
+    .site-row > .court-slot.off .court-no-mark { font-size: 1rem; }
+    .site-row > .court-slot.off .off-tag { display: none; }
+    .site-row.top > .court-slot:first-child { grid-column: auto; }
     .stat { padding: 0 1rem; }
   }
   /* on narrow screens the header logo drops out of the corner and
@@ -841,7 +941,14 @@
     }
   }
   @media (max-width: 560px) {
-    .board, .board.wide, .board.cols-2 { grid-template-columns: 1fr; }
+    /* phones: one readable column, closed courts hidden, clubhouse becomes a divider */
+    .site-board { padding: 0.8rem; }
+    .site-row { display: grid; grid-template-columns: 1fr; overflow: visible; gap: 1rem; }
+    .site-row > .court-slot { flex: none; }
+    .court-slot.off, .site-compass { display: none; }
+    .site-row:empty { display: none; }
+    .court-picker { grid-template-columns: repeat(7, 2rem); }
+    #quick-bar #qb-walkin { min-width: 0; flex: 1 1 100%; }
     /* two phone-width columns can't fit name + four chips — one readable
        column beats two truncated ones */
     .roster-grid { grid-template-columns: 1fr; }
@@ -938,7 +1045,8 @@
     <div id="roster-confirm"></div>
 
     <div class="roster-actions">
-      <input type="text" id="new-name" placeholder="Add one player…" size="18">
+      <input type="text" id="new-name" placeholder="Someone walked in… type a name" size="24" list="roster-names">
+      <datalist id="roster-names"></datalist>
       <button class="btn" id="add-player">Add player</button>
       <span class="spacer"></span>
       <button class="btn quiet" id="all-in">Tick everyone</button>
@@ -969,8 +1077,16 @@
     </div>
     <div class="controls-row">
       <div class="field">
-        <label for="courts-input">Courts available (comma-separated)</label>
-        <input type="text" id="courts-input" size="16">
+        <label>Courts open today — tap to switch a court on or off</label>
+        <div class="court-picker" id="court-picker" role="group" aria-label="Courts open today"></div>
+        <div class="picker-foot">
+          <span id="picker-count"></span>
+          <button type="button" class="linkish" id="courts-type-toggle">type them instead</button>
+        </div>
+        <div id="courts-typed">
+          <label for="courts-input" style="font-size:0.82rem;color:var(--muted);">Comma-separated</label>
+          <input type="text" id="courts-input" size="16">
+        </div>
       </div>
       <div class="field">
         <label for="pin-a">Put these two together (optional)</label>
@@ -1025,6 +1141,8 @@
       <li>The <strong>M / V</strong> pill on each player marks <strong>member</strong> or <strong>visitor</strong>. It's a label for you at the desk — it does not change the draw.</li>
       <li><strong>Bulk add</strong> takes a whole list at once — paste names one per line or separated by commas.</li>
       <li><strong>Select &amp; edit</strong> turns the roster into a picker: click any tiles, then mark them member/visitor, set the W&nbsp;·&nbsp;J&nbsp;·&nbsp;H tags, tick them in, or delete the lot in one go. Nothing pops up — deletes ask once, inline, and can be undone.</li>
+      <li>The court board is drawn as the club really is: <strong>1–7 along the bottom fence, the clubhouse in the middle, 8–11 along the top</strong>, car park to the left. Courts you haven't opened stay on the map as faint outlines. Pick today's courts by tapping them on the mini map in <strong>Next round</strong>.</li>
+      <li><strong>Someone walked in?</strong> Type their name in the bar at the bottom of the screen (or the roster's add box). A known name is ticked in; a new one is added as a visitor. If a round is already drawn they appear under it in an amber <strong>Arrived after the draw</strong> strip — <strong>Slot in</strong> fits them into that round without moving anyone who's already on court (fills a sit-out, turns a singles court into doubles, or opens a spare court), or <strong>Re-draw</strong> shuffles the whole round again.</li>
       <li>Courts fill 4 at a time (doubles). A leftover pair becomes a <strong>singles</strong> match. Odd numbers mean someone <strong>sits</strong> — the tool rotates who, never the same person twice in a row.</li>
       <li>Each player can be tagged <strong>W</strong> (woman), <strong>J</strong> (junior) and/or <strong>H</strong> (hard hitter). The draw evens things out: women &amp; juniors get one per side and never more than two on a court; hard hitters are spread across the courts, and when two land on one court they're put on opposite sides of the net. These tags only ever show here in the roster — the draws just show names.</li>
       <li>Mixups avoid repeating <strong>partners</strong> and <strong>foursomes</strong> from earlier rounds today.</li>
@@ -1045,7 +1163,7 @@
 <!-- ============================================================
      CLUB LOGO — big faded watermark
      ------------------------------------------------------------
-     STANDALONE COPY — the logo and event art are embedded in this file,
+     STANDALONE COPY - the logo and event art are embedded in this file,
      so you can email it, upload it or open it anywhere on its own.
 
      The tiles below are created automatically — as the day grows and
@@ -1096,6 +1214,27 @@
 
   /* the club logo file (STANDALONE-BUILD swaps this for an embedded copy) */
   var LOGO_FILE = document.querySelector(".masthead-mark").src;   // reuse the embedded copy
+
+  /* ---- THE CLUB, TOP-DOWN (north up) -------------------------------
+     Two rows of courts with the clubhouse between them. Left to right:
+     8–11 along the top (north) fence, 1–7 along the bottom (south) fence.
+     The car park and Royal Rd are off the LEFT edge. If a court is ever
+     renumbered, change it here and the board and the picker follow. */
+  var SITE = {
+    top: ["8", "9", "10", "11"],
+    bottom: ["1", "2", "3", "4", "5", "6", "7"]
+  };
+  var SITE_ALL = SITE.top.concat(SITE.bottom);
+  /* where a court label sits in "walking order" (1,2,…,11); labels that
+     aren't on the map sort after everything else, alphabetically */
+  function siteOrder(label) {
+    var i = SITE_ALL.indexOf(String(label));
+    return i >= 0 ? parseInt(SITE_ALL[i], 10) : 1000;
+  }
+  function courtCompare(a, b) {
+    var d = siteOrder(a) - siteOrder(b);
+    return d !== 0 ? d : String(a).localeCompare(String(b));
+  }
 
   /* The club roster as of 20 Sep 2026 — recovered from Nathan's own saved
      copy, so a fresh device starts with the real names. (A browser that has
@@ -1254,6 +1393,38 @@
 
   function parseCourts() {
     return state.courtsText.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  /* the picker writes the list back in walking order, so "next court" in
+     the draw and on the arrows always means the next one along the fence */
+  function setCourts(labels) {
+    var seen = {};
+    labels = labels.filter(function (l) { if (seen[l]) return false; seen[l] = true; return true; });
+    labels.sort(courtCompare);
+    state.courtsText = labels.join(",");
+  }
+  function toggleCourt(label) {
+    var labels = parseCourts();
+    var i = labels.indexOf(label);
+    if (i >= 0) labels.splice(i, 1); else labels.push(label);
+    setCourts(labels);
+    save(); renderSetup(); renderStats();
+  }
+
+  /* The mini map: the same two rows as the big board, one button per court.
+     "static" is the tiny read-only copy that goes on printed handouts. */
+  function miniMapHtml(open, isStatic) {
+    function cell(label, first) {
+      var on = open.indexOf(label) >= 0;
+      return '<button type="button" class="pc' + (on ? " on" : "") + (first ? " top1" : "") +
+        '" data-court="' + esc(label) + '" aria-pressed="' + (on ? "true" : "false") +
+        '" title="Court ' + esc(label) + (on ? " — open" : " — closed") + '">' + esc(label) + "</button>";
+    }
+    var html = '<div class="court-picker' + (isStatic ? " static" : "") + '"' + (isStatic ? ' aria-hidden="true"' : "") + ">";
+    SITE.top.forEach(function (l, i) { html += cell(l, i === 0); });
+    html += '<div class="pclub" title="Clubhouse"></div>';
+    SITE.bottom.forEach(function (l) { html += cell(l, false); });
+    html += "</div>";
+    return html;
   }
 
   function roundShape(n, labelCount) {
@@ -1507,10 +1678,28 @@
         if (entry && entry.byeIdx >= 0) {
           r.byes[entry.byeIdx] = outId;
           toast(nameOf(nid) + " is on, " + nameOf(outId) + " sits this round.", "ok");
+        } else if (swapSel.path.bye === undefined) {
+          /* the player coming off stays visible as sitting out, so they can
+             be tapped straight back in if that was a mistake */
+          r.byes.push(outId);
+          toast(nameOf(nid) + " is on, " + nameOf(outId) + " is now sitting out.", "ok");
         }
+        r.resting = r.resting.filter(function (x) { return x !== nid; });
         swapSel = null;
         save(); renderAll();
       });
+    }
+    if (swapSel.path.bye !== undefined) {
+      /* a sitting-out player who has gone home can be taken off the round */
+      var off = document.createElement("button");
+      off.className = "btn quiet"; off.textContent = "Remove from round";
+      off.title = "Take them off the sitting-out list (e.g. they went home)";
+      off.addEventListener("click", function () {
+        var gone = r.byes.splice(swapSel.path.bye, 1)[0];
+        swapSel = null; save(); renderAll();
+        toast(nameOf(gone) + " taken off this round. If they've gone home, untick them in the roster too.", "ok");
+      });
+      bar.insertBefore(off, byId("swap-cancel"));
     }
     byId("swap-cancel").addEventListener("click", function () {
       swapSel = null; renderAll();
@@ -1519,6 +1708,74 @@
   function removeSwapBar() {
     var b = byId("swap-bar");
     if (b) b.remove();
+  }
+
+  /* ---------------- late arrivals ----------------
+     Anyone ticked in who is neither on a court nor sitting out in the
+     latest round — they walked in after it was drawn. */
+  var expandedRounds = {};   // older rounds the user has unfolded (not saved)
+
+  function lateArrivals(r) {
+    var placed = {};
+    r.courts.forEach(function (c) { c.teamA.concat(c.teamB).forEach(function (id) { placed[id] = true; }); });
+    r.byes.forEach(function (id) { placed[id] = true; });
+    return state.roster.filter(function (p) { return p.playing && !placed[p.id]; });
+  }
+
+  /* keep the courts in walking order so the ◀ ▶ arrows mean "along the fence" */
+  function sortCourts(r) {
+    r.courts.sort(function (a, b) { return courtCompare(a.label, b.label); });
+  }
+
+  /* Fit ONE late player into the latest round without disturbing anyone who
+     is already on a court. In order of preference:
+       1. a singles court is on → they make it doubles, with another late
+          player or a sitting-out player as the fourth;
+       2. a spare court is open → they start a new court with whoever else is
+          waiting (late players first, then sitting-out players): 4 = doubles,
+          otherwise 2 = singles;
+       3. nothing fits → they sit this one out and are first on next round.
+     Returns a one-line description of what happened. With `quiet` the
+     caller does the save/render/toast itself. */
+  function slotInLate(id, quiet) {
+    var r = state.rounds[state.rounds.length - 1];
+    if (!r) return "";
+    var name = nameOf(id);
+    var late = lateArrivals(r).map(function (p) { return p.id; }).filter(function (x) { return x !== id; });
+    var waiting = late.concat(r.byes.slice());      // late players first, then whoever is sitting
+    var msg;
+
+    function take(n) {
+      var picked = waiting.slice(0, n);
+      picked.forEach(function (pid) { r.byes = r.byes.filter(function (b) { return b !== pid; }); });
+      return picked;
+    }
+
+    var singles = -1;
+    r.courts.forEach(function (c, ci) { if (singles < 0 && c.type === "singles") singles = ci; });
+    var used = r.courts.map(function (c) { return String(c.label); });
+    var spare = parseCourts().filter(function (l) { return used.indexOf(l) < 0; });
+
+    if (singles >= 0 && waiting.length >= 1) {
+      var c = r.courts[singles], mate = take(1)[0];
+      c.type = "doubles"; c.teamA.push(id); c.teamB.push(mate);
+      msg = name + " and " + nameOf(mate) + " join court " + c.label + " — it's doubles now.";
+    } else if (spare.length && waiting.length >= 3) {
+      var four = take(3);
+      r.courts.push({ label: spare[0], type: "doubles", teamA: [id, four[0]], teamB: [four[1], four[2]] });
+      msg = "Court " + spare[0] + " opened: " + [name].concat(four.map(nameOf)).join(", ") + ".";
+    } else if (spare.length && waiting.length >= 1) {
+      var two = take(1);
+      r.courts.push({ label: spare[0], type: "singles", teamA: [id], teamB: [two[0]] });
+      msg = "Court " + spare[0] + " opened: " + name + " v " + nameOf(two[0]) + " (singles).";
+    } else {
+      r.byes.push(id);
+      msg = name + " sits this round" + (spare.length ? "" : " — no spare court") + "; they'll be first on next round.";
+    }
+    sortCourts(r);
+    r.resting = r.resting.filter(function (x) { return x !== id; });
+    if (!quiet) { save(); renderAll(); toast(msg, "ok"); }
+    return msg;
   }
 
   function moveCourt(roundIdx, courtIdx, dir) {
@@ -1566,6 +1823,7 @@
       /* Either of them may have been sitting the round out — they're on a
          court now, so they must come off the sitting-out list. */
       r.byes = r.byes.filter(function (id) { return id !== a && id !== b; });
+      r.resting = r.resting.filter(function (id) { return id !== a && id !== b; });
       save(); renderAll();
     });
     byId("mkd-cancel").addEventListener("click", function () { removeSwapBar(); });
@@ -1810,9 +2068,16 @@
   /* ---------------- setup rendering ---------------- */
 
   function renderSetup() {
-    byId("courts-input").value = state.courtsText;
+    if (document.activeElement !== byId("courts-input")) byId("courts-input").value = state.courtsText;
     var pool = state.roster.filter(function (p) { return p.playing; });
     var info = describeShape(pool);
+
+    /* the mini map of open courts */
+    var open = info.labels;
+    byId("court-picker").innerHTML = miniMapHtml(open, false);
+    var offMap = open.filter(function (l) { return SITE_ALL.indexOf(l) < 0; });
+    byId("picker-count").textContent = plural(open.length, "court") + " open" +
+      (offMap.length ? " (plus " + offMap.join(", ") + " off the map)" : "");
     var note = byId("shape-note");
     if (pool.length < 2) {
       note.innerHTML = "Tick the players who are here today.";
@@ -1868,15 +2133,42 @@
       "</svg>";
   }
 
+  /* The board is the club drawn top-down (see SITE). Every court on the map
+     is drawn; the ones in play carry the names, the rest are dashed outlines,
+     so a court is always in the same place on screen as on the ground. */
   function roundCourtsHtml(r, ri) {
-    var n = r.courts.length;
-    /* one row per round however many courts are on; 5+ also break out
-       of the page's column so they fill a landscape screen */
-    var cls = "board";
-    if (n === 1 || n === 2) cls += " cols-" + n;
-    if (n >= 5) cls += " wide";
-    var html = '<div class="' + cls + '" style="--cols:' + n + '">';
-    r.courts.forEach(function (c, ci) {
+    var byLabel = {};
+    r.courts.forEach(function (c, ci) { byLabel[String(c.label)] = ci; });
+
+    function slot(label) {
+      var ci = byLabel[label];
+      if (ci === undefined) {
+        return '<div class="court-slot off"><div class="court-viz off" role="group" aria-label="Court ' + esc(label) + ', closed">' +
+          courtLinesSvg() + '<div class="court-centre"><span class="court-no-mark">' + esc(label) + "</span></div>" +
+          '<span class="off-tag">closed</span></div><div class="court-tools"><button class="btn quiet sm">&nbsp;</button></div></div>';
+      }
+      return courtSlotHtml(r, ri, ci);
+    }
+    var html = '<div class="site-board">' +
+      '<span class="site-edge" aria-hidden="true">Car park · Royal Rd</span>' +
+      '<span class="site-compass" aria-hidden="true"><b>N</b> ↑</span>' +
+      '<div class="site-row top">' + SITE.top.map(slot).join("") + "</div>" +
+      '<div class="site-club">Clubhouse</div>' +
+      '<div class="site-row bottom">' + SITE.bottom.map(slot).join("") + "</div>";
+    /* anything not on the map (a court called "A", say) gets a row of its own */
+    var extra = r.courts.map(function (c, ci) { return SITE_ALL.indexOf(String(c.label)) < 0 ? ci : -1; })
+      .filter(function (ci) { return ci >= 0; });
+    if (extra.length) {
+      html += '<div class="site-row extra">' + extra.map(function (ci) { return courtSlotHtml(r, ri, ci); }).join("") + "</div>";
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function courtSlotHtml(r, ri, ci) {
+    var c = r.courts[ci];
+    var html = "";
+    {
       var isS = c.type === "singles";
       /* court number in the middle of the court, with the Singles pill
          tucked under it when it's a singles match */
@@ -1900,8 +2192,7 @@
         (isS ? '<button class="btn quiet sm make-dbl" data-mkd="' + ci + '" data-mkd-round="' + ri + '">+ Make doubles</button>' : "") +
         '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="1" data-move-round="' + ri + '" title="Move this group to the next court">&#9654;</button>' +
         "</div></div>";
-    });
-    html += "</div>";
+    }
     return html;
   }
 
@@ -1939,10 +2230,19 @@
       var metaBits = [];
       if (byeNames.length) metaBits.push("Sitting this round: " + byeNames.join(", "));
 
+      var isLast = ri === state.rounds.length - 1;
+      var collapsed = !isLast && !expandedRounds[ri];
+      if (collapsed) block.classList.add("collapsed");
+      var late = isLast ? lateArrivals(r) : [];
+      var nCourts = r.courts.length;
+      metaBits.unshift(plural(nCourts, "court") + " in play");
+      if (late.length) metaBits.push(plural(late.length, "arrival") + " not yet on court");
+
       var html = '<div class="round-head">' +
         '<p class="r-eyebrow">Order of Play · Round ' + (ri + 1) + "</p>" +
         (metaBits.length ? '<p class="r-meta">' + esc(metaBits.join(" · ")) + "</p>" : "") +
         '<div class="r-actions">' +
+        (isLast ? "" : '<button class="btn quiet sm r-toggle" data-toggle-round="' + ri + '" aria-expanded="' + (collapsed ? "false" : "true") + '">' + (collapsed ? "Show ▾" : "Hide ▴") + "</button>") +
         '<div class="seg" role="group" aria-label="Round view">' +
         '<button data-view="courts"' + (state.viewMode === "courts" ? ' class="active"' : "") + ">Courts</button>" +
         '<button data-view="table"' + (state.viewMode === "table" ? ' class="active"' : "") + ">Table</button>" +
@@ -1950,20 +2250,60 @@
         '<button class="btn sm" data-print-round="' + ri + '">Print</button></div>' +
         "</div>";
 
+      html += '<div class="r-body">';
       html += state.viewMode === "table" ? roundTableHtml(r, ri) : roundCourtsHtml(r, ri);
+
+      if (late.length) {
+        html += '<div class="arrived" role="group" aria-label="Arrived after the draw"><span class="lbl">Arrived after the draw</span>';
+        late.forEach(function (p) {
+          html += '<span class="who">' + esc(p.name) +
+            '<button class="btn primary sm" data-slot-in="' + p.id + '" title="Fit them into this round without moving anyone already on court">Slot in</button></span>';
+        });
+        if (late.length > 1) html += '<button class="btn sm" data-slot-all="1">Slot everyone in</button>';
+        html += '<button class="btn quiet sm" data-redraw="1" title="Shuffle the whole round again with everyone who is here">Re-draw round ' + (ri + 1) + "</button>";
+        html += "</div>";
+      }
 
       if (byeNames.length) {
         html += '<p class="byes-note">Sitting out: ';
-        html += r.byes.map(function (id, bi) { return nameSpan(ri, { bye: bi }, id); }).join(", ");
+        html += r.byes.map(function (id, bi) { return nameSpan(ri, { bye: bi }, id).replace('class="p-name"', 'class="p-name sit-plate"'); }).join(" ");
         html += "</p>";
       }
       if (restingNames.length) {
         html += '<p class="byes-note">Not here today: ' + esc(restingNames.join(", ")) + "</p>";
       }
-      html += '<p class="swap-hint">Fix by hand: click one name, then another — they swap spots. Or click one name and use the Replace box to bring in someone who isn’t on court.</p>';
+      html += '<p class="swap-hint">Fix by hand: tap one name, then tap where it should go — they swap spots (a sitting-out name works too). Or tap one name and use the Replace box.</p>';
+      html += "</div>";
 
       block.innerHTML = html;
       host.appendChild(block);
+    });
+
+    host.querySelectorAll("[data-toggle-round]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var i = parseInt(btn.getAttribute("data-toggle-round"), 10);
+        expandedRounds[i] = !expandedRounds[i];
+        renderRounds(); fitCourtNames(); renderWatermark();
+      });
+    });
+    host.querySelectorAll("[data-slot-in]").forEach(function (btn) {
+      btn.addEventListener("click", function () { slotInLate(parseInt(btn.getAttribute("data-slot-in"), 10)); });
+    });
+    host.querySelectorAll("[data-slot-all]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var r = state.rounds[state.rounds.length - 1];
+        var ids = lateArrivals(r).map(function (p) { return p.id; });
+        var done = [];
+        ids.forEach(function (id) {
+          /* an earlier slot-in may already have pulled this one on as a partner */
+          if (lateArrivals(r).some(function (p) { return p.id === id; })) done.push(slotInLate(id, true));
+        });
+        save(); renderAll();
+        toast(done.filter(Boolean).join(" "), "ok");
+      });
+    });
+    host.querySelectorAll("[data-redraw]").forEach(function (btn) {
+      btn.addEventListener("click", function () { makeRound(true); });
     });
 
     host.querySelectorAll(".p-name").forEach(function (el) {
@@ -2220,6 +2560,7 @@
 
   function renderAll() {
     renderRoster();
+    renderNameList();
     renderSetup();
     renderRounds();
     renderDay();
@@ -2236,7 +2577,10 @@
     var head = document.createElement("div");
     head.className = "print-head";
     head.innerHTML = '<img class="print-logo" src="' + LOGO_FILE + '" alt="">' +
-      '<p class="eyebrow">Safety Bay Tennis Club · ' + esc(EVENT_ON ? EVENT.title : DAY_WORD + " Socials") + "</p>";
+      '<p class="eyebrow">Safety Bay Tennis Club · ' + esc(EVENT_ON ? EVENT.title : DAY_WORD + " Socials") + "</p>" +
+      /* a thumbnail of the club showing which courts are on — the printed
+         courts go 3-up in order, so this is how the reader finds them */
+      miniMapHtml(parseCourts(), true);
     zone.appendChild(head);
     zone.appendChild(el.cloneNode(true));
     document.body.classList.add("print-mode");
@@ -2252,17 +2596,37 @@
   byId("add-player").addEventListener("click", addPlayer);
   byId("new-name").addEventListener("keydown", function (e) { if (e.key === "Enter") addPlayer(); });
 
-  function addPlayer() {
-    var inp = byId("new-name");
+  function addPlayer() { walkIn(byId("new-name")); }
+
+  /* "Someone walked in": a name already on the books is ticked in; a new
+     name is added as a visitor and ticked in. Either way, if a round is
+     already drawn they'll appear under it as "Arrived after the draw". */
+  function walkIn(inp) {
     var v = inp.value.trim();
     if (!v) return;
-    var dup = state.roster.some(function (p) { return p.name.toLowerCase() === v.toLowerCase(); });
-    if (dup) { toast('"' + v + '" is already on the roster — not added again.', "warn"); return; }
-    state.roster.push({ id: state.nextId++, name: v, w: false, j: false, h: false, playing: true, member: true });
+    var hit = null;
+    state.roster.forEach(function (p) { if (!hit && p.name.toLowerCase() === v.toLowerCase()) hit = p; });
+    if (hit) {
+      if (hit.playing) { toast(hit.name + " is already ticked in.", "warn"); inp.value = ""; return; }
+      hit.playing = true;
+      inp.value = "";
+      save(); renderAll();
+      toast(hit.name + " ticked in." + (state.rounds.length ? " Find them under round " + state.rounds.length + " to slot them in." : ""), "ok");
+      return;
+    }
+    state.roster.push({ id: state.nextId++, name: v, w: false, j: false, h: false, playing: true, member: false });
     sortRoster();
     inp.value = "";
     save(); renderAll();
-    toast('"' + v + '" added and ticked in.');
+    toast('"' + v + '" added as a visitor and ticked in. Tap their V pill in the roster if they’re a member.', "ok");
+  }
+
+  /* the add boxes suggest names from the roster — people not yet ticked in first */
+  function renderNameList() {
+    var dl = byId("roster-names");
+    if (!dl) return;
+    var out = state.roster.filter(function (p) { return !p.playing; }).map(function (p) { return p.name; });
+    dl.innerHTML = out.map(function (n) { return "<option value=\"" + esc(n) + "\"></option>"; }).join("");
   }
 
   function sortRoster() {
@@ -2340,6 +2704,19 @@
     state.courtsText = byId("courts-input").value;
     save(); renderSetup(); renderStats();
   });
+  byId("courts-input").addEventListener("change", function () {
+    setCourts(parseCourts());          // tidy into walking order once they've finished typing
+    save(); renderSetup(); renderStats();
+  });
+  byId("court-picker").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-court]");
+    if (btn) toggleCourt(btn.getAttribute("data-court"));
+  });
+  byId("courts-type-toggle").addEventListener("click", function () {
+    var box = byId("courts-typed");
+    box.classList.toggle("show");
+    if (box.classList.contains("show")) byId("courts-input").focus();
+  });
 
   byId("generate").addEventListener("click", function () { makeRound(false); });
   byId("reroll").addEventListener("click", function () { makeRound(true); });
@@ -2381,12 +2758,16 @@
     var bar = document.createElement("div");
     bar.id = "quick-bar";
     bar.innerHTML =
+      '<input type="text" id="qb-walkin" placeholder="+ Someone walked in… type a name" list="roster-names" aria-label="Someone walked in — type a name">' +
       '<span class="qb-info" id="qb-info"></span>' +
       '<span class="spacer"></span>' +
       '<button class="btn quiet" id="qb-top">↑ Top</button>' +
       '<button class="btn primary" id="qb-generate">Generate round</button>';
     document.body.appendChild(bar);
 
+    bar.querySelector("#qb-walkin").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); walkIn(e.target); }
+    });
     bar.querySelector("#qb-generate").addEventListener("click", function () { makeRound(false); });
     bar.querySelector("#qb-top").addEventListener("click", function () {
       window.scrollTo({ top: 0, behavior: "smooth" });
