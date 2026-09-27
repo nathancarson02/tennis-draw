@@ -622,7 +622,7 @@
   .site-row.bottom::before {
     content: ""; position: absolute; z-index: 0; pointer-events: none;
     left: 0; right: 0; top: calc(-1 * var(--row-gap)); bottom: 0;
-    background: var(--site-wm, none) center top / min(64%, 1150px) auto no-repeat;
+    background: var(--site-wm, none) center top / min(82%, 1500px) auto no-repeat;
     opacity: var(--logo-wm-opacity); mix-blend-mode: var(--logo-wm-blend);
     filter: var(--logo-wm-lift);
   }
@@ -826,6 +826,10 @@
      (pointer-events: none). The number of tiles is worked out in JS
      from the page height — see renderWatermark(). */
   #logo-watermark {
+    /* SWITCHED OFF (Nathan, 27 Sep 2026): one logo only — the big one under
+       the top row of the court board (.site-row.bottom::before). The tiling
+       code is left in place; delete this line to bring the tiles back. */
+    display: none;
     position: absolute; z-index: 20; pointer-events: none; user-select: none;
     top: var(--logo-wm-top); left: 50%; transform: translateX(-50%);
     width: min(var(--logo-wm-width), 92vw);
