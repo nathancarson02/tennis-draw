@@ -609,23 +609,24 @@
     width: var(--wide); margin-left: calc((100% - var(--wide)) / 2);
     padding: 0.4rem 2.2rem 0.4rem 0.4rem;   /* a little room on the right for the car-park label */
   }
-  /* A second, smaller and fainter tiling of the club logo sits behind the
-     courts themselves — it shows through the gaps and the closed courts,
-     where there's nothing you need to read. --site-wm is set by the script
-     (it's the same image as LOGO_FILE, so the standalone build stays
-     self-contained). The blend mode follows the page watermark's, so it
-     only ever paints the logo's own strokes. */
-  .site-board::before {
-    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background: var(--site-wm, none) center / 300px auto repeat;
-    opacity: 0.09; mix-blend-mode: var(--logo-wm-blend);
-    filter: var(--logo-wm-lift);
-  }
-  .site-row { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(0.4rem, 1vw, 0.9rem); }
+  .site-row { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(0.4rem, 1vw, 0.9rem); }
   /* the block of four sits under courts 6–3 of the long row, as on the ground;
      the gap between the rows is where the clubhouse is */
-  .site-row.bottom { margin-top: clamp(1.2rem, 3vw, 3rem); }
+  .site-row.bottom { --row-gap: clamp(1.4rem, 3.5vw, 3.6rem); margin-top: var(--row-gap); }
   .site-row.bottom > .court-slot:first-child { grid-column: 2; }
+  /* One big club logo sits just under the top row and runs on behind the
+     bottom row, where mostly closed courts and gaps are — so it's in plain
+     view without ever crossing a name on the busy row. Same opacity, blend
+     and lift as the page watermark. --site-wm is set by the script from
+     LOGO_FILE, so the standalone build stays self-contained. */
+  .site-row.bottom::before {
+    content: ""; position: absolute; z-index: 0; pointer-events: none;
+    left: 0; right: 0; top: calc(-1 * var(--row-gap)); bottom: 0;
+    background: var(--site-wm, none) center top / min(64%, 1150px) auto no-repeat;
+    opacity: var(--logo-wm-opacity); mix-blend-mode: var(--logo-wm-blend);
+    filter: var(--logo-wm-lift);
+  }
+  .site-row.bottom > .court-slot { position: relative; z-index: 1; }
   .site-edge {
     position: absolute; right: 0.5rem; top: 50%;
     transform: rotate(90deg) translateX(-50%); transform-origin: right top;
@@ -904,7 +905,7 @@
        order instead, with a thumbnail map in the header saying which
        courts are on. The closed courts and the map furniture drop out. */
     .site-board { width: auto; margin-left: 0; padding: 0; }
-    .site-board::before { display: none; }
+    .site-row.bottom::before { display: none; }
     .site-row.bottom { margin-top: 1rem; }
     .site-row, .site-row.top { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
     .site-row.bottom > .court-slot:first-child { grid-column: auto; }
@@ -949,7 +950,7 @@
   @media (max-width: 560px) {
     /* phones: one readable column, closed courts hidden, clubhouse becomes a divider */
     .site-board { padding: 0; }
-    .site-board::before { display: none; }
+    .site-row.bottom::before { display: none; }
     .site-row { display: grid; grid-template-columns: 1fr; overflow: visible; gap: 1rem; }
     .site-row > .court-slot { flex: none; }
     .court-slot.off, .site-compass { display: none; }
@@ -2847,7 +2848,7 @@
     fitCourtNames();
     renderWatermark();
   });
-  /* the small logo tiling behind the court board (see .site-board::before) */
+  /* the big logo under the top row of the court board (see .site-row.bottom::before) */
   document.documentElement.style.setProperty("--site-wm", 'url("' + LOGO_FILE + '")');
 
   renderAll();
