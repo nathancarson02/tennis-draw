@@ -1792,15 +1792,33 @@
     return msg;
   }
 
+  /* ◀ ▶ moves a group ONE court along the fence, through today's open courts
+     (walking order). If the next court is empty the group simply moves there
+     and its old court is left empty; only when the next court already has a
+     group on it do the two groups trade places. So with 2 of 5 courts in
+     play you can spread the two out with an empty court between them. */
   function moveCourt(roundIdx, courtIdx, dir) {
-    var courts = state.rounds[roundIdx].courts;
-    var j = courtIdx + dir;
-    if (j < 0 || j >= courts.length) return;
-    var a = courts[courtIdx], b = courts[j];
-    // court numbers stay where they are — the player groups trade places
-    var tmp = { type: a.type, teamA: a.teamA, teamB: a.teamB };
-    a.type = b.type; a.teamA = b.teamA; a.teamB = b.teamB;
-    b.type = tmp.type; b.teamA = tmp.teamA; b.teamB = tmp.teamB;
+    var r = state.rounds[roundIdx];
+    var a = r.courts[courtIdx];
+    var seen = {}, labels = [];
+    parseCourts().concat(r.courts.map(function (c) { return String(c.label); })).forEach(function (l) {
+      if (!seen[l]) { seen[l] = true; labels.push(l); }
+    });
+    labels.sort(courtCompare);
+    var j = labels.indexOf(String(a.label)) + dir;
+    if (j < 0 || j >= labels.length) return;
+    var target = labels[j];
+    var b = null;
+    r.courts.forEach(function (c) { if (String(c.label) === target) b = c; });
+    if (b) {
+      // that court is busy — court numbers stay put, the two groups trade places
+      var tmp = { type: a.type, teamA: a.teamA, teamB: a.teamB };
+      a.type = b.type; a.teamA = b.teamA; a.teamB = b.teamB;
+      b.type = tmp.type; b.teamA = tmp.teamA; b.teamB = tmp.teamB;
+    } else {
+      a.label = target;   // empty court — just move across
+    }
+    sortCourts(r);
     swapSel = null;
     save(); renderAll();
   }
