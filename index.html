@@ -2219,9 +2219,12 @@
         '<div class="court-viz" role="group" aria-label="Court ' + esc(c.label) + '">' +
         courtLinesSvg() + centre + inner + "</div>" +
         '<div class="court-tools">' +
-        '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="-1" data-move-round="' + ri + '" title="Move this group to the previous court">&#9664;</button>' +
+        /* The map is turned 180°, so court numbers run 7…1 (and 11…8) left to
+           right on screen. ◀ / ▶ mean LEFT / RIGHT AS YOU SEE IT: right is the
+           next lower number, left the next higher. */
+        '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="1" data-move-round="' + ri + '" title="Move this group one court to the left">&#9664;</button>' +
         (isS ? '<button class="btn quiet sm make-dbl" data-mkd="' + ci + '" data-mkd-round="' + ri + '">+ Make doubles</button>' : "") +
-        '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="1" data-move-round="' + ri + '" title="Move this group to the next court">&#9654;</button>' +
+        '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="-1" data-move-round="' + ri + '" title="Move this group one court to the right">&#9654;</button>' +
         "</div></div>";
     }
     return html;
