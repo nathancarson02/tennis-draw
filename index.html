@@ -848,8 +848,8 @@
   }
 
   /* theme toggle — top-left of the masthead, mirroring the logo top-right */
-  #theme-toggle {
-    position: absolute; top: 0; left: 0; z-index: 3;
+  .masthead-tools { position: absolute; top: 0; left: 0; z-index: 3; display: flex; gap: 0.4rem; }
+  #theme-toggle, #tv-toggle {
     display: inline-flex; align-items: center; gap: 0.4rem;
     font-family: var(--font-mono);
     font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase;
@@ -858,8 +858,60 @@
   #theme-toggle svg { width: 0.85rem; height: 0.85rem; flex: 0 0 auto; }
   /* on small screens it sits in the flow so it can't overlap the title */
   @media (max-width: 760px) {
-    #theme-toggle { position: static; margin: 0 auto 0.9rem; }
+    .masthead-tools { position: static; justify-content: center; margin: 0 auto 0.9rem; }
   }
+
+  /* ---- round strip: R1 R2 R3 … Latest ---- */
+  #round-strip {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
+    padding: 0.5rem 0.75rem; margin: 0 0 0.9rem;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  .rs-lbl { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-right: 0.3rem; }
+  .rs-btn {
+    font: inherit; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+    padding: 0.4rem 0.8rem; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent; color: var(--ink);
+  }
+  .rs-btn:hover { border-color: var(--brand); }
+  .rs-btn.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .rs-btn.latest { margin-left: auto; }
+
+  /* ---- repeat warnings on a court ---- */
+  .court-slot.clash-amber .court-viz { box-shadow: 0 0 0 3px #E0A93A, 0 0 0 7px rgba(224,169,58,0.25); }
+  .court-slot.clash-red .court-viz { box-shadow: 0 0 0 3px var(--danger), 0 0 0 7px var(--danger-tint); }
+  .clash-note {
+    margin: 0.45rem 0 0; font-size: 0.78rem; line-height: 1.3; font-weight: 600;
+    padding: 0.3rem 0.55rem; border-radius: 8px; border-left: 3px solid #E0A93A;
+    background: rgba(224,169,58,0.14); color: var(--ink);
+    white-space: normal; overflow-wrap: anywhere;
+  }
+  .clash-note.red { border-left-color: var(--danger); background: var(--danger-tint); }
+  tr.clash-amber td { background: rgba(224,169,58,0.12); }
+  tr.clash-red td { background: var(--danger-tint); }
+  .muted-note { font-size: 0.82rem; color: var(--muted); }
+
+  /* ---- TV mode: the current round only, big, nothing to tap ---- */
+  #tv-exit { position: fixed; right: 1rem; bottom: 1rem; z-index: 60; opacity: 0.55; }
+  #tv-exit:hover { opacity: 1; }
+  :root[data-tv="on"] #roster-panel, :root[data-tv="on"] #setup-panel, :root[data-tv="on"] #day-panel,
+  :root[data-tv="on"] .help, :root[data-tv="on"] #quick-bar, :root[data-tv="on"] #notice-host,
+  :root[data-tv="on"] .court-tools, :root[data-tv="on"] .swap-hint, :root[data-tv="on"] .arrived,
+  :root[data-tv="on"] .swap-bar, :root[data-tv="on"] .r-actions, :root[data-tv="on"] .clash-note,
+  :root[data-tv="on"] .masthead .stat-strip, :root[data-tv="on"] .masthead .meta,
+  :root[data-tv="on"] .round-block:not(.tv-current), :root[data-tv="on"] .resting-note { display: none !important; }
+  :root[data-tv="on"] .court-slot .court-viz { box-shadow: none !important; }
+  :root[data-tv="on"] .round-block.tv-current .r-body { display: block; }
+  :root[data-tv="on"] .round-block.tv-current { padding-top: 0.6rem; }
+  :root[data-tv="on"] .masthead { padding-top: 0.6rem; padding-bottom: 0.4rem; margin-bottom: 0.4rem; }
+  :root[data-tv="on"] .masthead h1 { font-size: clamp(1.3rem, 2.6vw, 2.2rem); margin: 0; }
+  :root[data-tv="on"] .masthead-mark { width: min(22vw, 180px); }
+  :root[data-tv="on"] .p-name { pointer-events: none; }
+  :root[data-tv="on"] .court-viz .p-name { font-size: clamp(1.1rem, 2.4vw, 2.3rem); }
+  :root[data-tv="on"] .site-board { width: min(99vw, 2600px); }
+  :root[data-tv="on"] .page { padding-top: 0; }
 
   /* the crisp lockup, top-right of the masthead.
      It sits on its OWN line (margin-left:auto pushes it right), so the
@@ -899,8 +951,10 @@
     body.print-mode #notice-host { display: none !important; }
     body.print-mode #print-zone { display: block; padding: 0.5rem; }
     .r-actions, .swap-hint, .swap-bar, .make-dbl, .court-tools,
-    .mv-btn, .confirm-strip, .batch-bar, .setup-buttons,
-    #theme-toggle { display: none !important; }
+    .mv-btn, .confirm-strip, .batch-bar, .setup-buttons, .clash-note,
+    #round-strip, #tv-exit, .masthead-tools { display: none !important; }
+    .court-slot .court-viz { box-shadow: none !important; }
+    tr.clash-amber td, tr.clash-red td { background: none !important; }
     .panel { border: none; box-shadow: none; padding: 0; }
     .day-scroll { max-height: none; overflow: visible; border: none; }
     .tl-head, .tl-round { position: static; }
@@ -1015,7 +1069,11 @@
 
 <div class="page">
   <header class="masthead">
-    <button class="btn sm" id="theme-toggle" type="button" aria-live="polite"></button>
+    <div class="masthead-tools">
+      <button class="btn sm" id="tv-toggle" type="button" title="Just the current round, big, nothing else — for the TV">Show on TV</button>
+      <button class="btn sm" id="theme-toggle" type="button" aria-live="polite"></button>
+    </div>
+    <button class="btn" id="tv-exit" type="button" style="display:none;">Exit TV</button>
     <svg class="court-lines" viewBox="0 0 800 200" aria-hidden="true" focusable="false">
       <rect x="20" y="20" width="760" height="160" fill="none" stroke="currentColor" stroke-width="3"/>
       <line x1="400" y1="20" x2="400" y2="180" stroke="currentColor" stroke-width="3"/>
@@ -1121,6 +1179,7 @@
   </section>
 
   <!-- ================= ROUNDS ================= -->
+  <nav id="round-strip" aria-label="Rounds" style="display:none;"></nav>
   <section id="rounds-container"></section>
 
   <!-- ================= WHOLE DAY ================= -->
@@ -1157,7 +1216,8 @@
       <li><strong>Someone walked in?</strong> Type their name in the bar at the bottom of the screen (or the roster's add box). A known name is ticked in; a new one is added as a visitor. If a round is already drawn they appear under it in an amber <strong>Arrived after the draw</strong> strip — <strong>Slot in</strong> fits them into that round without moving anyone who's already on court (fills a sit-out, turns a singles court into doubles, or opens a spare court), or <strong>Re-draw</strong> shuffles the whole round again.</li>
       <li>Courts fill 4 at a time (doubles). A leftover pair becomes a <strong>singles</strong> match. Odd numbers mean someone <strong>sits</strong> — the tool rotates who, never the same person twice in a row.</li>
       <li>Each player can be tagged <strong>W</strong> (woman), <strong>J</strong> (junior) and/or <strong>H</strong> (hard hitter). The draw evens things out: women &amp; juniors get one per side and never more than two on a court; hard hitters are spread across the courts, and when two land on one court they're put on opposite sides of the net. These tags only ever show here in the roster — the draws just show names.</li>
-      <li>Mixups avoid repeating <strong>partners</strong> and <strong>foursomes</strong> from earlier rounds today.</li>
+      <li>Mixups avoid repeating <strong>partners</strong>, <strong>opponents</strong> and <strong>court-mates</strong> from earlier rounds today. If a hand-fix recreates an earlier match the court turns <strong>amber</strong> (two of them have played together or against each other) or <strong>red</strong> (the same four), with a note saying who and when.</li>
+      <li><strong>Show on TV</strong> (top right) shows just the current round, big, with nothing else on screen — the R1 R2 R3 strip picks the round. Press <strong>Esc</strong> or the Exit button to come back.</li>
       <li>Each round has two views — <strong>Courts</strong> and <strong>Table</strong> — switch with the buttons in the round header.</li>
       <li>To fix a draw by hand, <strong>click one name, then another</strong> — they swap courts. Sat-out players can be swapped in too.</li>
       <li>To sub in someone not on court at all, <strong>click the name coming off</strong> — a Replace box appears; pick the new player and hit <strong>Replace</strong>.</li>
@@ -1379,10 +1439,18 @@
 
   function pairKey(a, b) { return a < b ? a + "|" + b : b + "|" + a; }
 
-  function buildHistory() {
-    var h = { partners: {}, opponents: {}, foursomes: {}, byes: {}, singles: {}, lastByes: {} };
-    state.rounds.forEach(function (r, idx) {
+  /* History of the day so far. `upto` (optional) = only count rounds BEFORE
+     that index — used to judge a round against the ones played before it.
+       partners  : two on the same side        opponents : across the net
+       met       : shared a court at all       foursomes : the exact four
+     Every count is for TODAY only. */
+  function buildHistory(upto) {
+    var h = { partners: {}, opponents: {}, met: {}, foursomes: {}, byes: {}, singles: {}, lastByes: {} };
+    var rounds = upto === undefined ? state.rounds : state.rounds.slice(0, upto);
+    rounds.forEach(function (r, idx) {
       r.courts.forEach(function (c) {
+        var all = c.teamA.concat(c.teamB);
+        all.forEach(function (a) { all.forEach(function (b) { if (a < b) bump(h.met, pairKey(a, b)); }); });
         if (c.type === "doubles") {
           bump(h.partners, pairKey(c.teamA[0], c.teamA[1]));
           bump(h.partners, pairKey(c.teamB[0], c.teamB[1]));
@@ -1396,7 +1464,7 @@
       });
       r.byes.forEach(function (id) {
         bump(h.byes, id);
-        if (idx === state.rounds.length - 1) h.lastByes[id] = true;
+        if (idx === rounds.length - 1) h.lastByes[id] = true;
       });
     });
     return h;
@@ -1484,17 +1552,28 @@
     return cands.slice(0, count);
   }
 
+  /* Lower is better. Repeats cost count-SQUARED so a second meeting with
+     the same person costs far more than the first — once repeats are
+     unavoidable (small group, long day) they get spread around evenly
+     instead of landing on the same two people. Measured 4 Oct 2026: the
+     old linear weights (opponent 12 vs partner 120) gave 6-8 repeat
+     opponents a day; these give 0-2. */
+  function sq(n) { return n * n; }
   function scoreDraw(courts, hist, softSet, hardSet) {
     var s = 0;
     courts.forEach(function (c) {
+      var all = c.teamA.concat(c.teamB);
+      all.forEach(function (a) {
+        all.forEach(function (b) { if (a < b) s += 40 * sq(hist.met[pairKey(a, b)] || 0); });
+      });
       if (c.type === "doubles") {
-        s += 120 * (hist.partners[pairKey(c.teamA[0], c.teamA[1])] || 0);
-        s += 120 * (hist.partners[pairKey(c.teamB[0], c.teamB[1])] || 0);
+        s += 120 * sq(hist.partners[pairKey(c.teamA[0], c.teamA[1])] || 0);
+        s += 120 * sq(hist.partners[pairKey(c.teamB[0], c.teamB[1])] || 0);
         c.teamA.forEach(function (a) {
-          c.teamB.forEach(function (b) { s += 12 * (hist.opponents[pairKey(a, b)] || 0); });
+          c.teamB.forEach(function (b) { s += 60 * sq(hist.opponents[pairKey(a, b)] || 0); });
         });
-        var four = c.teamA.concat(c.teamB).slice().sort(function (x, y) { return x - y; }).join(",");
-        s += 150 * (hist.foursomes[four] || 0);
+        var four = all.slice().sort(function (x, y) { return x - y; }).join(",");
+        s += 300 * (hist.foursomes[four] || 0);
 
         /* women & juniors: at most two per court, one per side where possible */
         var wjA = c.teamA.filter(function (id) { return softSet[id]; }).length;
@@ -1512,7 +1591,7 @@
         if (hTotal > 2) s += 250 * (hTotal - 2);
         if (hTotal === 2 && (hA === 2 || hB === 2)) s += 80;
       } else {
-        s += 12 * (hist.opponents[pairKey(c.teamA[0], c.teamB[0])] || 0);
+        s += 60 * sq(hist.opponents[pairKey(c.teamA[0], c.teamB[0])] || 0);
         s += 35 * ((hist.singles[c.teamA[0]] || 0) + (hist.singles[c.teamB[0]] || 0));
         /* a hard hitter against someone who isn't one is a lopsided singles */
         if (!!hardSet[c.teamA[0]] !== !!hardSet[c.teamB[0]]) s += 45;
@@ -1530,9 +1609,13 @@
 
     var pinActive = pin && pool.indexOf(pin[0]) !== -1 && pool.indexOf(pin[1]) !== -1 && shape.doubles > 0;
     var best = null, bestScore = Infinity;
-    var tries = 6000;
+    /* 400 random starts, each polished by improveDraw. Measured 4 Oct 2026:
+       this finds a clean draw (no repeat partner OR opponent) for 20-24
+       players in well under a second, where 6000 plain shuffles never did. */
+    var tries = 400, t0 = Date.now();
 
     for (var it = 0; it < tries; it++) {
+      if (best && Date.now() - t0 > 900) break;    // a second is long enough to wait
       var arr = pool.slice();
       if (pinActive) {
         arr = arr.filter(function (id) { return id !== pin[0] && id !== pin[1]; });
@@ -1561,8 +1644,41 @@
         courts.push({ label: labels[li++], type: "singles", teamA: [arr[k++]], teamB: [arr[k++]] });
       }
 
-      var sc = scoreDraw(courts, hist, softSet, hardSet);
+      var sc = improveDraw(courts, hist, softSet, hardSet, pinActive ? pin : null);
       if (sc < bestScore) { bestScore = sc; best = courts; if (sc === 0) break; }
+    }
+    return best;
+  }
+
+  /* Polish one draw in place: try swapping every two players who are on
+     different courts (or different sides of one court), keep any swap that
+     lowers the score, repeat until nothing helps. The pinned pair is never
+     moved. Returns the final score. */
+  function improveDraw(courts, hist, softSet, hardSet, pin) {
+    var slots = [];
+    courts.forEach(function (c, ci) {
+      ["teamA", "teamB"].forEach(function (side) {
+        c[side].forEach(function (id, i) {
+          if (pin && (id === pin[0] || id === pin[1])) return;
+          slots.push({ c: ci, side: side, i: i });
+        });
+      });
+    });
+    var best = scoreDraw(courts, hist, softSet, hardSet);
+    var moved = true;
+    while (moved && best > 0) {
+      moved = false;
+      for (var x = 0; x < slots.length; x++) {
+        for (var y = x + 1; y < slots.length; y++) {
+          var a = slots[x], b = slots[y];
+          if (a.c === b.c && a.side === b.side) continue;   // same side: no change
+          var ta = courts[a.c][a.side], tb = courts[b.c][b.side];
+          var t = ta[a.i]; ta[a.i] = tb[b.i]; tb[b.i] = t;
+          var s = scoreDraw(courts, hist, softSet, hardSet);
+          if (s < best) { best = s; moved = true; }
+          else { tb[b.i] = ta[a.i]; ta[a.i] = t; }
+        }
+      }
     }
     return best;
   }
@@ -1575,6 +1691,12 @@
     var labels = parseCourts();
     if (!labels.length) { setNote("setup-warnings", "Enter at least one court number above.", "warn"); return; }
 
+    /* the draw takes up to a second on a big day — show it's working first */
+    ["generate", "qb-generate", "reroll"].forEach(function (id) { var b = byId(id); if (b) { b.disabled = true; b.textContent = "Drawing…"; } });
+    setTimeout(function () { finishRound(replaceLast, pool, labels); }, 30);
+  }
+
+  function finishRound(replaceLast, pool, labels) {
     if (replaceLast && state.rounds.length) state.rounds.pop();
 
     var hist = buildHistory();
@@ -1588,15 +1710,24 @@
     var playing = pool.filter(function (id) { return byes.indexOf(id) === -1; });
 
     var courts = generateDraw(playing, labels, shape, hist, pin);
-    if (!courts) { setNote("setup-warnings", "Couldn't build a draw — check the court numbers and how many players are ticked in.", "warn"); return; }
+    ["generate", "qb-generate", "reroll"].forEach(function (id) { var b = byId(id); if (b) b.disabled = false; });
+    if (!courts) { renderSetup(); setNote("setup-warnings", "Couldn't build a draw — check the court numbers and how many players are ticked in.", "warn"); return; }
 
     var resting = state.roster.filter(function (p) { return !p.playing; }).map(function (p) { return p.id; });
     state.rounds.push({ courts: courts, byes: byes, resting: resting });
     byId("pin-a").value = ""; byId("pin-b").value = ""; // pin is a one-round request
+    tvRound = state.rounds.length - 1;
     save();
     renderAll();
     var blocks = document.querySelectorAll(".round-block");
     if (blocks.length) blocks[blocks.length - 1].scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /* Put a player on a court in this round: they can't also be sitting out
+     or "not here". Every hand edit that brings someone on goes through here. */
+  function putOnCourt(r, id) {
+    r.byes = r.byes.filter(function (x) { return x !== id; });
+    r.resting = r.resting.filter(function (x) { return x !== id; });
   }
 
   /* ---------------- swap / replace ---------------- */
@@ -1647,7 +1778,9 @@
     });
     var byeIdx = {};
     r.byes.forEach(function (id, i) { byeIdx[id] = i; });
-    return state.roster.filter(function (p) { return !onCourt[p.id]; })
+    /* only people who are HERE (ticked in) — someone marked "not here today"
+       has to be ticked in first, so the roster and the round agree */
+    return state.roster.filter(function (p) { return p.playing && !onCourt[p.id]; })
       .map(function (p) {
         return { id: p.id, name: p.name, byeIdx: byeIdx[p.id] === undefined ? -1 : byeIdx[p.id] };
       });
@@ -1673,6 +1806,8 @@
       html += "<span>or replace with</span><select id=\"replace-sel\">" +
         availableOptionsHtml(avail) +
         '</select><button class="btn" id="replace-btn">Replace</button>';
+    } else {
+      html += '<span class="muted-note">Nobody spare to bring on — tick someone in on the roster first.</span>';
     }
     html += '<button class="btn quiet" id="swap-cancel">Cancel</button>';
     bar.innerHTML = html;
@@ -1698,7 +1833,7 @@
           r.byes.push(outId);
           toast(nameOf(nid) + " is on, " + nameOf(outId) + " is now sitting out.", "ok");
         }
-        r.resting = r.resting.filter(function (x) { return x !== nid; });
+        putOnCourt(r, nid);
         swapSel = null;
         save(); renderAll();
       });
@@ -1728,12 +1863,73 @@
      Anyone ticked in who is neither on a court nor sitting out in the
      latest round — they walked in after it was drawn. */
   var expandedRounds = {};   // older rounds the user has unfolded (not saved)
+  var curClashes = [];       // repeat warnings for the round being rendered
+  var tvRound = -1;          // which round the TV / round strip shows (-1 = latest)
 
   function lateArrivals(r) {
     var placed = {};
     r.courts.forEach(function (c) { c.teamA.concat(c.teamB).forEach(function (id) { placed[id] = true; }); });
     r.byes.forEach(function (id) { placed[id] = true; });
     return state.roster.filter(function (p) { return p.playing && !placed[p.id]; });
+  }
+
+  /* ---------------- repeat warnings ----------------
+     Judge each court of round `ri` against the rounds played BEFORE it:
+       red   = the same four (or the same singles pair) already played today
+       amber = two of them already partnered or faced each other today
+     Shown as a tint on the court plus a one-line note, so a hand-swap that
+     quietly recreates an earlier match is obvious. Never printed, never on TV. */
+  function courtClashes(r, ri) {
+    var hist = buildHistory(ri);
+    var seenIn = {};   // "a|b" -> { partner: [round nos], opp: [round nos] }
+    state.rounds.slice(0, ri).forEach(function (pr, pi) {
+      pr.courts.forEach(function (c) {
+        function note(kind, a, b) {
+          var k = pairKey(a, b); seenIn[k] = seenIn[k] || { partner: [], opp: [] };
+          seenIn[k][kind].push(pi + 1);
+        }
+        if (c.type === "doubles") {
+          note("partner", c.teamA[0], c.teamA[1]); note("partner", c.teamB[0], c.teamB[1]);
+        }
+        c.teamA.forEach(function (a) { c.teamB.forEach(function (b) { note("opp", a, b); }); });
+      });
+    });
+    return r.courts.map(function (c) {
+      var notes = [], level = "none";
+      var all = c.teamA.concat(c.teamB);
+      var key = all.slice().sort(function (x, y) { return x - y; }).join(",");
+      var sameFour = c.type === "doubles" ? hist.foursomes[key] : hist.opponents[pairKey(c.teamA[0], c.teamB[0])];
+      if (sameFour) level = "red";
+      if (c.type === "doubles") {
+        [c.teamA, c.teamB].forEach(function (t) {
+          var s = seenIn[pairKey(t[0], t[1])];
+          if (s && s.partner.length) { notes.push(nameOf(t[0]) + " & " + nameOf(t[1]) + " partnered in R" + s.partner.join(", R")); if (level === "none") level = "amber"; }
+        });
+      }
+      c.teamA.forEach(function (a) {
+        c.teamB.forEach(function (b) {
+          var s = seenIn[pairKey(a, b)];
+          if (s && s.opp.length) { notes.push(nameOf(a) + " v " + nameOf(b) + " in R" + s.opp.join(", R")); if (level === "none") level = "amber"; }
+        });
+      });
+      if (level === "red") {
+        /* the exact match says it all — just name the round(s) */
+        var when = [];
+        state.rounds.slice(0, ri).forEach(function (pr, pi) {
+          pr.courts.forEach(function (pc) {
+            var pk = pc.teamA.concat(pc.teamB).slice().sort(function (x, y) { return x - y; }).join(",");
+            if (pk === key) when.push("R" + (pi + 1));
+          });
+        });
+        notes = [(c.type === "doubles" ? "same four as " : "same two as ") + when.join(", ")];
+      }
+      return { level: level, notes: notes };
+    });
+  }
+  function clashNoteHtml(cl) {
+    if (!cl || cl.level === "none") return "";
+    return '<p class="clash-note ' + cl.level + '" title="' + esc(cl.notes.join(" · ")) + '">' +
+      (cl.level === "red" ? "Repeat match: " : "Played before: ") + esc(cl.notes.join(" · ")) + "</p>";
   }
 
   /* keep the courts in walking order so the ◀ ▶ arrows mean "along the fence" */
@@ -1759,10 +1955,29 @@
     var waiting = late.concat(r.byes.slice());      // late players first, then whoever is sitting
     var msg;
 
-    function take(n) {
-      var picked = waiting.slice(0, n);
-      picked.forEach(function (pid) { r.byes = r.byes.filter(function (b) { return b !== pid; }); });
-      return picked;
+    /* Who joins them is chosen with the same scoring as the draw (history
+       and W/J/H tags), not just whoever is first in the list. `build` turns
+       a candidate list into the court to score; the lowest score wins. */
+    var ri = state.rounds.length - 1;
+    var hist = buildHistory(ri), softSet = {}, hardSet = {};
+    state.roster.forEach(function (p) { if (p.w || p.j) softSet[p.id] = true; if (p.h) hardSet[p.id] = true; });
+    function bestOf(n, build) {
+      var best = null, bs = Infinity;
+      function rec(start, picked) {
+        if (picked.length === n) {
+          /* for a four, each of the three could be the partner — try all */
+          for (var rot = 0; rot < n; rot++) {
+            var order = picked.slice(rot).concat(picked.slice(0, rot));
+            var s = scoreDraw([build(order)], hist, softSet, hardSet);
+            if (s < bs) { bs = s; best = order; }
+          }
+          return;
+        }
+        for (var i = start; i < waiting.length; i++) { picked.push(waiting[i]); rec(i + 1, picked); picked.pop(); }
+      }
+      rec(0, []);
+      best.forEach(function (pid) { putOnCourt(r, pid); });
+      return best;
     }
 
     var singles = -1;
@@ -1771,15 +1986,16 @@
     var spare = parseCourts().filter(function (l) { return used.indexOf(l) < 0; });
 
     if (singles >= 0 && waiting.length >= 1) {
-      var c = r.courts[singles], mate = take(1)[0];
+      var c = r.courts[singles];
+      var mate = bestOf(1, function (p) { return { type: "doubles", teamA: c.teamA.concat([id]), teamB: c.teamB.concat([p[0]]) }; })[0];
       c.type = "doubles"; c.teamA.push(id); c.teamB.push(mate);
       msg = name + " and " + nameOf(mate) + " join court " + c.label + " — it's doubles now.";
     } else if (spare.length && waiting.length >= 3) {
-      var four = take(3);
+      var four = bestOf(3, function (p) { return { type: "doubles", teamA: [id, p[0]], teamB: [p[1], p[2]] }; });
       r.courts.push({ label: spare[0], type: "doubles", teamA: [id, four[0]], teamB: [four[1], four[2]] });
       msg = "Court " + spare[0] + " opened: " + [name].concat(four.map(nameOf)).join(", ") + ".";
     } else if (spare.length && waiting.length >= 1) {
-      var two = take(1);
+      var two = bestOf(1, function (p) { return { type: "singles", teamA: [id], teamB: [p[0]] }; });
       r.courts.push({ label: spare[0], type: "singles", teamA: [id], teamB: [two[0]] });
       msg = "Court " + spare[0] + " opened: " + name + " v " + nameOf(two[0]) + " (singles).";
     } else {
@@ -1852,10 +2068,7 @@
       c.type = "doubles";
       c.teamA.push(a);
       c.teamB.push(b);
-      /* Either of them may have been sitting the round out — they're on a
-         court now, so they must come off the sitting-out list. */
-      r.byes = r.byes.filter(function (id) { return id !== a && id !== b; });
-      r.resting = r.resting.filter(function (id) { return id !== a && id !== b; });
+      putOnCourt(r, a); putOnCourt(r, b);
       save(); renderAll();
     });
     byId("mkd-cancel").addEventListener("click", function () { removeSwapBar(); });
@@ -2000,6 +2213,22 @@
 
   /* ---------------- roster rendering ---------------- */
 
+  /* Tiles read A-Z DOWN column 1, then down column 2 … (Nathan, 4 Oct 2026),
+     not across the rows. The grid picks its own column count from the
+     width, so measure that and set the rows to match. */
+  function layoutRosterColumns() {
+    var grid = byId("roster-grid");
+    if (!grid) return;
+    var n = grid.children.length;
+    grid.style.gridAutoFlow = ""; grid.style.gridTemplateRows = ""; grid.style.gridTemplateColumns = "";
+    if (!n) return;
+    var cols = getComputedStyle(grid).gridTemplateColumns.split(" ").length;
+    if (cols < 2) return;
+    grid.style.gridTemplateColumns = "repeat(" + cols + ", minmax(0, 1fr))";
+    grid.style.gridAutoFlow = "column";
+    grid.style.gridTemplateRows = "repeat(" + Math.ceil(n / cols) + ", auto)";
+  }
+
   function renderRoster() {
     var grid = byId("roster-grid");
     grid.className = "roster-grid" + (manageMode ? " manage" : "");
@@ -2074,6 +2303,7 @@
 
     renderBatchBar();
     updateRosterCount();
+    layoutRosterColumns();
   }
 
   function updateRosterCount() {
@@ -2215,9 +2445,10 @@
           '<div class="quad bl">' + nameSpan(ri, { court: ci, side: "B", idx: 0 }, c.teamB[0]) + "</div>" +
           '<div class="quad br">' + nameSpan(ri, { court: ci, side: "B", idx: 1 }, c.teamB[1]) + "</div>";
       }
-      html += '<div class="court-slot">' +
+      var cl = curClashes[ci];
+      html += '<div class="court-slot' + (cl && cl.level !== "none" ? " clash-" + cl.level : "") + '">' +
         '<div class="court-viz" role="group" aria-label="Court ' + esc(c.label) + '">' +
-        courtLinesSvg() + centre + inner + "</div>" +
+        courtLinesSvg() + centre + inner + "</div>" + clashNoteHtml(cl) +
         '<div class="court-tools">' +
         /* The map is turned 180°, so court numbers run 7…1 (and 11…8) left to
            right on screen. ◀ / ▶ mean LEFT / RIGHT AS YOU SEE IT: right is the
@@ -2236,23 +2467,57 @@
     r.courts.forEach(function (c, ci) {
       var a = c.teamA.map(function (id, i) { return nameSpan(ri, { court: ci, side: "A", idx: i }, id); }).join(" &amp; ");
       var b = c.teamB.map(function (id, i) { return nameSpan(ri, { court: ci, side: "B", idx: i }, id); }).join(" &amp; ");
-      html += "<tr><td>" + esc(c.label) +
+      var cl = curClashes[ci];
+      html += '<tr class="' + (cl && cl.level !== "none" ? "clash-" + cl.level : "") + '"><td>' + esc(c.label) +
         (c.type === "singles" ? ' <span class="sgl-mark">singles</span> <button class="btn quiet sm make-dbl" data-mkd="' + ci + '" data-mkd-round="' + ri + '">+ Make doubles</button>' : "") +
         ' <button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="-1" data-move-round="' + ri + '" title="Move this group up a court">&#9650;</button>' +
         '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="1" data-move-round="' + ri + '" title="Move this group down a court">&#9660;</button>' +
         "</td>" +
-        '<td class="team-cell">' + a + '</td><td class="vs-cell">vs</td><td class="team-cell">' + b + "</td></tr>";
+        '<td class="team-cell">' + a + '</td><td class="vs-cell">vs</td><td class="team-cell">' + b + clashNoteHtml(cl) + "</td></tr>";
     });
     html += "</tbody></table></div>";
     return html;
   }
 
+  /* R1 R2 R3 … strip above the rounds: tap to jump to a round (opens it,
+     folds the others). On the TV it picks which round is on screen. */
+  function renderRoundStrip() {
+    var host = byId("round-strip");
+    if (!host) return;
+    if (state.rounds.length < 2 && !isTv()) { host.innerHTML = ""; host.style.display = "none"; return; }
+    host.style.display = "";
+    var cur = currentRound();
+    var html = '<span class="rs-lbl">Rounds</span>';
+    state.rounds.forEach(function (r, ri) {
+      html += '<button type="button" class="rs-btn' + (ri === cur ? " active" : "") + '" data-rs="' + ri + '">R' + (ri + 1) + "</button>";
+    });
+    html += '<button type="button" class="rs-btn latest' + (cur === state.rounds.length - 1 ? " active" : "") + '" data-rs="' + (state.rounds.length - 1) + '">Latest</button>';
+    host.innerHTML = html;
+    host.querySelectorAll("[data-rs]").forEach(function (b) {
+      b.addEventListener("click", function () { goToRound(parseInt(b.getAttribute("data-rs"), 10)); });
+    });
+  }
+  function currentRound() {
+    if (!state.rounds.length) return -1;
+    return (tvRound >= 0 && tvRound < state.rounds.length) ? tvRound : state.rounds.length - 1;
+  }
+  function goToRound(ri) {
+    tvRound = ri;
+    expandedRounds = {}; expandedRounds[ri] = true;
+    swapSel = null;
+    renderRounds(); fitCourtNames(); renderWatermark();
+    var el = byId("round-" + (ri + 1));
+    if (el && !isTv()) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function renderRounds() {
     var host = byId("rounds-container");
     host.innerHTML = "";
+    renderRoundStrip();
+    var shown = currentRound();
     state.rounds.forEach(function (r, ri) {
       var block = document.createElement("section");
-      block.className = "round-block panel";
+      block.className = "round-block panel" + (ri === shown ? " tv-current" : "");
       block.id = "round-" + (ri + 1);
 
       /* players deleted from the roster since this round was drawn have no
@@ -2285,6 +2550,7 @@
         "</div>";
 
       html += '<div class="r-body">';
+      curClashes = courtClashes(r, ri);
       html += state.viewMode === "table" ? roundTableHtml(r, ri) : roundCourtsHtml(r, ri);
 
       if (late.length) {
@@ -2304,9 +2570,9 @@
         html += "</p>";
       }
       if (restingNames.length) {
-        html += '<p class="byes-note">Not here today: ' + esc(restingNames.join(", ")) + "</p>";
+        html += '<p class="byes-note resting-note">Not here today: ' + esc(restingNames.join(", ")) + "</p>";
       }
-      html += '<p class="swap-hint">Fix by hand: tap one name, then tap where it should go — they swap spots (a sitting-out name works too). Or tap one name and use the Replace box.</p>';
+      html += '<p class="swap-hint">Fix by hand: tap a name, then tap another to swap them. Amber or red courts repeat an earlier round.</p>';
       html += "</div>";
 
       block.innerHTML = html;
@@ -2844,6 +3110,29 @@
 
   paintThemeButton();
 
+  /* ---------------- TV mode ----------------
+     Only the current round, big, nothing to tap. Per browser (like the
+     theme); ?tv in the address opens straight into it; Esc leaves. */
+  function isTv() { return document.documentElement.getAttribute("data-tv") === "on"; }
+  function setTv(on) {
+    document.documentElement.setAttribute("data-tv", on ? "on" : "off");
+    try { localStorage.setItem("sbts_tv", on ? "on" : "off"); } catch (e) { /* private mode */ }
+    byId("tv-exit").style.display = on ? "" : "none";
+    byId("tv-toggle").textContent = on ? "Exit TV" : "Show on TV";
+    swapSel = null;
+    if (on) tvRound = -1;              // start on the latest round
+    renderRounds(); fitCourtNames(); renderWatermark();
+    if (on) window.scrollTo(0, 0);
+  }
+  byId("tv-toggle").addEventListener("click", function () { setTv(!isTv()); });
+  byId("tv-exit").addEventListener("click", function () { setTv(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && isTv()) setTv(false); });
+  (function () {
+    var want = /[?&]tv/.test(location.search);
+    try { if (!want && localStorage.getItem("sbts_tv") === "on") want = true; } catch (e) { /* ignore */ }
+    if (want) { document.documentElement.setAttribute("data-tv", "on"); byId("tv-exit").style.display = ""; byId("tv-toggle").textContent = "Exit TV"; }
+  })();
+
   /* ---------------- go ---------------- */
 
   var d = new Date();
@@ -2865,6 +3154,7 @@
   window.addEventListener("resize", function () {
     clearTimeout(reflowTimer);
     reflowTimer = setTimeout(function () {
+      layoutRosterColumns();
       fitCourtNames();
       renderWatermark();
     }, 120);
