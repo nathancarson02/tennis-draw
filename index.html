@@ -505,7 +505,7 @@
   .court-no-mark {
     font-family: var(--font-mono); font-weight: 800;
     font-variant-numeric: tabular-nums; line-height: 0.8;
-    letter-spacing: -0.03em; color: rgba(255, 255, 255, 0.143);   /* 10% more opaque than 0.13 */
+    letter-spacing: -0.03em; color: rgba(255, 255, 255, 0.24);   /* brighter ghost digit (was 0.13) */
     font-size: clamp(3rem, 14vw, 9rem);   /* fallback */
     font-size: 62cqw;                     /* scales off the court's width */
   }
@@ -676,7 +676,7 @@
   /* a court that isn't open today */
   .court-viz.off { background: transparent; box-shadow: none; border: 1.5px dashed color-mix(in srgb, var(--ink) 22%, transparent); }
   .court-viz.off svg.lines { opacity: 0.18; }
-  .court-viz.off .court-no-mark { color: color-mix(in srgb, var(--ink) 31%, transparent); font-size: 40cqw; }   /* 10% more opaque than 28% */
+  .court-viz.off .court-no-mark { color: color-mix(in srgb, var(--ink) 48%, transparent); font-size: 40cqw; }   /* brighter ghost digit (was 28%) */
   .court-viz.off .off-tag {
     position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%);
     font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.14em;
