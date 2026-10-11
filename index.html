@@ -593,6 +593,42 @@
   .p-name.selected { background: var(--ball); color: var(--ball-ink); text-shadow: none; outline: 2px solid var(--brand); }
   .swap-hint { font-size: 0.81rem; color: var(--muted); font-style: italic; margin: 0.8rem 0 0; }
 
+  /* An empty spot on a court (3 on a doubles court, say): a dashed "+" that
+     lights up while a name is selected, so you can tap it to move them there. */
+  .p-empty {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.7em; height: 1.7em; border: 2px dashed rgba(255, 255, 255, 0.55); border-radius: 999px;
+    color: #fff; font-weight: 800; font-size: 1.1rem; line-height: 1; cursor: pointer; opacity: 0.55;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .byes-note .p-empty {
+    color: var(--muted); border-color: var(--line); border-radius: var(--r-xs);
+    padding: 0 0.5rem; height: auto; font-size: 0.8rem; font-weight: 700; min-height: 1.7em;
+  }
+  .round-table .p-empty { color: var(--muted); border-color: var(--line); }
+  .round-block.picking .p-empty { opacity: 1; background: rgba(201, 226, 101, 0.35); border-color: var(--ball); }
+  .round-block.picking .court-viz.off { cursor: pointer; outline: 2px dashed var(--ball); outline-offset: 2px; }
+  .round-block.picking .court-viz.off .off-tag::after { content: " · tap to open"; }
+
+  /* Singles / Doubles pill under each court */
+  .ct-seg { display: inline-flex; }
+  .ct-seg button { font-size: 0.66rem; padding: 0.2rem 0.5rem; }
+
+  /* A draft round: drawn but not yet saved */
+  .round-block.draft { border: 2px dashed var(--brand); }
+  .draft-badge {
+    display: inline-block; background: #E0A93A; color: #1a1a1a; font-family: var(--font-mono);
+    font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 0.15rem 0.5rem; border-radius: var(--r-xs); vertical-align: middle;
+  }
+  .rs-btn.draft { border-style: dashed; }
+  .round-confirm:empty { display: none; }
+  :root[data-tv="on"] .p-empty, :root[data-tv="on"] .round-confirm { display: none !important; }
+  @media print {
+    .p-empty, .save-round, .del-round, .round-confirm, .ct-seg { display: none !important; }
+    .round-block.draft { border: none; }
+  }
+
   /* ============================================================
      9b. SITE MAP — the board is drawn as the club really is
      ------------------------------------------------------------
@@ -1171,9 +1207,7 @@
     <div id="setup-warnings"></div>
     <div class="setup-buttons">
       <button class="btn primary big" id="generate">Generate round</button>
-      <button class="btn" id="reroll" style="display:none;">Re-roll last round</button>
       <span style="flex:1"></span>
-      <button class="btn danger" id="delete-last" style="display:none;">Delete last round</button>
     </div>
     <div id="setup-confirm"></div>
   </section>
@@ -1208,7 +1242,7 @@
   <details class="help">
     <summary>How this works</summary>
     <ul>
-      <li><strong>Tick</strong> the players who are here today, then hit <strong>Generate round</strong>.</li>
+      <li><strong>Tick</strong> the players who are here today, then hit <strong>Generate round</strong>. That gives you a <strong>draft</strong> (dashed border). Fix it by hand if you like, then press <strong>Save round</strong> when it's actually being played. Generate again while a draft is showing and it's re-drawn, so unplayed rounds never pile up. Any saved round has a <strong>Delete</strong> button in its header (with Undo).</li>
       <li>The <strong>M / V</strong> pill on each player marks <strong>member</strong> or <strong>visitor</strong>. It's a label for you at the desk — it does not change the draw.</li>
       <li><strong>Bulk add</strong> takes a whole list at once — paste names one per line or separated by commas.</li>
       <li><strong>Select &amp; edit</strong> turns the roster into a picker: click any tiles, then mark them member/visitor, set the W&nbsp;·&nbsp;J&nbsp;·&nbsp;H tags, tick them in, or delete the lot in one go. Nothing pops up — deletes ask once, inline, and can be undone.</li>
@@ -1219,9 +1253,9 @@
       <li>Mixups avoid repeating <strong>partners</strong>, <strong>opponents</strong> and <strong>court-mates</strong> from earlier rounds today. If a hand-fix recreates an earlier match the court turns <strong>amber</strong> (two of them have played together or against each other) or <strong>red</strong> (the same four), with a note saying who and when.</li>
       <li><strong>Show on TV</strong> (top right) shows just the current round, big, with nothing else on screen — the R1 R2 R3 strip picks the round. Press <strong>Esc</strong> or the Exit button to come back.</li>
       <li>Each round has two views — <strong>Courts</strong> and <strong>Table</strong> — switch with the buttons in the round header.</li>
-      <li>To fix a draw by hand, <strong>click one name, then another</strong> — they swap courts. Sat-out players can be swapped in too.</li>
+      <li>To fix a draw by hand, <strong>tap one name, then another</strong> — they swap. Tap a name then a dashed <strong>+</strong> to move them into that spot, a closed court to open it with them, or <strong>+ sit out</strong> to sit them. A court can hold 3 (or 1) while you shuffle — it just shows an amber note. Taking the last name off a court closes it.</li>
       <li>To sub in someone not on court at all, <strong>click the name coming off</strong> — a Replace box appears; pick the new player and hit <strong>Replace</strong>.</li>
-      <li>A singles court has a <strong>+ Make doubles</strong> button — pick two more players and it becomes a doubles court.</li>
+      <li>Each court has a <strong>Singles / Doubles</strong> switch. Doubles to singles sits the two extra players; singles to doubles asks who joins.</li>
       <li>The <strong>◀ ▶ arrows</strong> under a court move that group to the neighbouring court — court numbers stay put, players shift.</li>
       <li><strong>Whole day → Timeline</strong> is the top-down view: every round stacked down the page, every court across. It's read-only on purpose — edit rounds in their own panel above.</li>
       <li>Everything saves automatically in this browser on this computer. <strong>Print</strong> uses your browser's print box — choose "Save as PDF" there for a file.</li>
@@ -1427,6 +1461,7 @@
     ["roster-confirm", "setup-confirm", "day-confirm"].forEach(function (id) {
       var h = byId(id); if (h) h.innerHTML = "";
     });
+    document.querySelectorAll(".round-confirm").forEach(function (h) { h.innerHTML = ""; });
   }
 
   function setNote(hostId, msg, kind) {
@@ -1447,19 +1482,24 @@
   function buildHistory(upto) {
     var h = { partners: {}, opponents: {}, met: {}, foursomes: {}, byes: {}, singles: {}, lastByes: {} };
     var rounds = upto === undefined ? state.rounds : state.rounds.slice(0, upto);
+    rounds = rounds.filter(function (r) { return !r.draft; });   // a draft hasn't been played
     rounds.forEach(function (r, idx) {
       r.courts.forEach(function (c) {
+        /* a court can be short a player while it's being fixed by hand, so
+           only count the pairs that actually exist */
         var all = c.teamA.concat(c.teamB);
         all.forEach(function (a) { all.forEach(function (b) { if (a < b) bump(h.met, pairKey(a, b)); }); });
         if (c.type === "doubles") {
-          bump(h.partners, pairKey(c.teamA[0], c.teamA[1]));
-          bump(h.partners, pairKey(c.teamB[0], c.teamB[1]));
+          if (c.teamA.length === 2) bump(h.partners, pairKey(c.teamA[0], c.teamA[1]));
+          if (c.teamB.length === 2) bump(h.partners, pairKey(c.teamB[0], c.teamB[1]));
           c.teamA.forEach(function (a) { c.teamB.forEach(function (b) { bump(h.opponents, pairKey(a, b)); }); });
-          var four = c.teamA.concat(c.teamB).slice().sort(function (x, y) { return x - y; }).join(",");
-          bump(h.foursomes, four);
+          if (all.length === 4) {
+            var four = all.slice().sort(function (x, y) { return x - y; }).join(",");
+            bump(h.foursomes, four);
+          }
         } else {
-          bump(h.opponents, pairKey(c.teamA[0], c.teamB[0]));
-          bump(h.singles, c.teamA[0]); bump(h.singles, c.teamB[0]);
+          if (c.teamA.length && c.teamB.length) bump(h.opponents, pairKey(c.teamA[0], c.teamB[0]));
+          all.forEach(function (id) { bump(h.singles, id); });
         }
       });
       r.byes.forEach(function (id) {
@@ -1683,7 +1723,7 @@
     return best;
   }
 
-  function makeRound(replaceLast) {
+  function makeRound() {
     clearConfirms();
     var pool = state.roster.filter(function (p) { return p.playing; }).map(function (p) { return p.id; });
     if (pool.length < 2) { setNote("setup-warnings", "Tick at least 2 players in the roster first.", "warn"); return; }
@@ -1693,11 +1733,14 @@
 
     /* the draw takes up to a second on a big day — show it's working first */
     ["generate", "qb-generate", "reroll"].forEach(function (id) { var b = byId(id); if (b) { b.disabled = true; b.textContent = "Drawing…"; } });
-    setTimeout(function () { finishRound(replaceLast, pool, labels); }, 30);
+    setTimeout(function () { finishRound(pool, labels); }, 30);
   }
 
-  function finishRound(replaceLast, pool, labels) {
-    if (replaceLast && state.rounds.length) state.rounds.pop();
+  /* A new draw always lands as a DRAFT: it only becomes a round when
+     "Save round" is pressed. Drawing again while a draft is showing simply
+     replaces it, so a day never fills with rounds that were never played. */
+  function finishRound(pool, labels) {
+    if (draftRound()) state.rounds.pop();
 
     var hist = buildHistory();
     var shape = roundShape(pool.length, labels.length);
@@ -1714,7 +1757,7 @@
     if (!courts) { renderSetup(); setNote("setup-warnings", "Couldn't build a draw — check the court numbers and how many players are ticked in.", "warn"); return; }
 
     var resting = state.roster.filter(function (p) { return !p.playing; }).map(function (p) { return p.id; });
-    state.rounds.push({ courts: courts, byes: byes, resting: resting });
+    state.rounds.push({ courts: courts, byes: byes, resting: resting, draft: true });
     byId("pin-a").value = ""; byId("pin-b").value = ""; // pin is a one-round request
     tvRound = state.rounds.length - 1;
     save();
@@ -1730,6 +1773,44 @@
     r.resting = r.resting.filter(function (x) { return x !== id; });
   }
 
+  /* players per side: 1 for singles, 2 for doubles. A team array shorter
+     than this means an empty spot (drawn as a "+") */
+  function teamSize(c) { return c.type === "singles" ? 1 : 2; }
+  function courtShort(c) { return teamSize(c) * 2 - (c.teamA.length + c.teamB.length); }
+
+  /* The draft (if any) is always the LAST round. Saved rounds have no flag. */
+  function savedRounds() { return state.rounds.filter(function (r) { return !r.draft; }); }
+  function draftRound() {
+    var last = state.rounds[state.rounds.length - 1];
+    return last && last.draft ? last : null;
+  }
+  function roundTitle(ri) { return state.rounds[ri] && state.rounds[ri].draft ? "the draft" : "round " + (ri + 1); }
+
+  function saveRound(ri) {
+    var r = state.rounds[ri];
+    if (!r || !r.draft) return;
+    delete r.draft;
+    swapSel = null;
+    save(); renderAll();
+    toast("Round " + (ri + 1) + " saved.", "ok");
+  }
+
+  /* Delete any round (not just the last). Later rounds move up a number.
+     Deleting never touches a draft that is sitting at the end. */
+  function deleteRound(ri) {
+    var r = state.rounds[ri];
+    if (!r) return;
+    var what = r.draft ? "Throw away the draft?" : "Delete round " + (ri + 1) + "? Later rounds move up a number.";
+    askConfirm("round-confirm-" + ri, what, r.draft ? "Throw away" : "Delete round", function () {
+      var gone = state.rounds.splice(ri, 1)[0];
+      tvRound = -1; expandedRounds = {}; swapSel = null;
+      save(); renderAll();
+      toast((gone.draft ? "Draft" : "Round " + (ri + 1)) + " deleted.", null, "Undo", function () {
+        state.rounds.splice(ri, 0, gone); save(); renderAll();
+      });
+    });
+  }
+
   /* ---------------- swap / replace ---------------- */
 
   var swapSel = null; // {round, path}
@@ -1742,28 +1823,77 @@
     if (path.bye !== undefined) { r.byes[path.bye] = id; return; }
     r.courts[path.court]["team" + path.side][path.idx] = id;
   }
+  /* Take a player out of a slot. A court left with nobody on it closes.
+     Returns the label of the court that closed, or null. */
+  function slotRemove(r, path) {
+    if (path.bye !== undefined) { r.byes.splice(path.bye, 1); return null; }
+    var c = r.courts[path.court];
+    c["team" + path.side].splice(path.idx, 1);
+    if (!c.teamA.length && !c.teamB.length) { r.courts.splice(path.court, 1); return c.label; }
+    return null;
+  }
+  /* Move a player from one slot into an EMPTY one (a "+", or "+ sit out").
+     The target court is looked up before anything is removed, because
+     closing the source court can shift the court indexes. */
+  function slotMove(r, from, to) {
+    var id = slotGet(r, from);
+    var tc = to.bye === undefined ? r.courts[to.court] : null;
+    var closed = slotRemove(r, from);
+    if (tc) { tc["team" + to.side].push(id); putOnCourt(r, id); }
+    else { r.byes.push(id); r.resting = r.resting.filter(function (x) { return x !== id; }); }
+    return closed;
+  }
 
   function onNameClick(roundIdx, path, el) {
+    var r = state.rounds[roundIdx];
+    var targetEmpty = slotGet(r, path) === undefined;
     if (swapSel && swapSel.round === roundIdx &&
         JSON.stringify(swapSel.path) === JSON.stringify(path)) {
       swapSel = null; renderAll(); return;
     }
     if (!swapSel) {
+      if (targetEmpty) { toast("Tap a name first, then tap where they should go.", "warn"); return; }
       swapSel = { round: roundIdx, path: path };
       el.classList.add("selected");
       showSwapBar(roundIdx);
       return;
     }
     if (swapSel.round !== roundIdx) {
+      if (targetEmpty) { toast("That spot is in a different round — tap a name in this round first.", "warn"); return; }
       swapSel = { round: roundIdx, path: path };
       renderAll(); markSelected(); showSwapBar(roundIdx);
       return;
     }
-    var r = state.rounds[roundIdx];
+    if (targetEmpty) {
+      /* move into the empty spot (a "+" on a court, or "+ sit out") */
+      var who = nameOf(slotGet(r, swapSel.path));
+      var closed = slotMove(r, swapSel.path, path);
+      swapSel = null;
+      save(); renderAll();
+      if (closed !== null) toast(who + " moved — court " + closed + " is now closed.", "ok");
+      return;
+    }
     var idA = slotGet(r, swapSel.path), idB = slotGet(r, path);
     slotSet(r, swapSel.path, idB); slotSet(r, path, idA);
     swapSel = null;
     save(); renderAll();
+  }
+
+  /* Tap a name, then a closed court on the board: it opens as a singles
+     court with that player on it (add the rest with its "+" spots). */
+  function openCourtWith(roundIdx, label) {
+    if (!swapSel || swapSel.round !== roundIdx) {
+      toast("Tap a name first, then tap a closed court to open it with them.", "warn"); return;
+    }
+    var r = state.rounds[roundIdx];
+    var id = slotGet(r, swapSel.path);
+    var closed = slotRemove(r, swapSel.path);
+    r.courts.push({ label: label, type: "singles", teamA: [id], teamB: [] });
+    putOnCourt(r, id);
+    sortCourts(r);
+    swapSel = null;
+    save(); renderAll();
+    toast("Court " + label + " opened with " + nameOf(id) + "." + (closed !== null ? " Court " + closed + " is now closed." : ""), "ok");
   }
 
   /* Everyone who could be brought onto a court in this round: anyone not
@@ -1801,7 +1931,7 @@
     var bar = document.createElement("div");
     bar.className = "swap-bar"; bar.id = "swap-bar";
     var selName = esc(nameOf(slotGet(r, swapSel.path)));
-    var html = "<span><strong>" + selName + "</strong> selected — click another name to swap</span>";
+    var html = "<span><strong>" + selName + "</strong> selected — tap another name to swap, or a + to move them there</span>";
     if (avail.length) {
       html += "<span>or replace with</span><select id=\"replace-sel\">" +
         availableOptionsHtml(avail) +
@@ -1809,9 +1939,21 @@
     } else {
       html += '<span class="muted-note">Nobody spare to bring on — tick someone in on the roster first.</span>';
     }
+    if (swapSel.path.bye === undefined) html += '<button class="btn quiet" id="swap-sit">Sit out</button>';
     html += '<button class="btn quiet" id="swap-cancel">Cancel</button>';
     bar.innerHTML = html;
-    byId("round-" + (roundIdx + 1)).appendChild(bar);
+    var block = byId("round-" + (roundIdx + 1));
+    block.appendChild(bar);
+    block.classList.add("picking");   // lights up the + spots and closed courts
+
+    if (byId("swap-sit")) {
+      byId("swap-sit").addEventListener("click", function () {
+        var who = nameOf(slotGet(r, swapSel.path));
+        var closed = slotMove(r, swapSel.path, { bye: r.byes.length });
+        swapSel = null; save(); renderAll();
+        toast(who + " is sitting out." + (closed !== null ? " Court " + closed + " is now closed." : ""), "ok");
+      });
+    }
 
     if (avail.length) {
       byId("replace-btn").addEventListener("click", function () {
@@ -1883,13 +2025,15 @@
     var hist = buildHistory(ri);
     var seenIn = {};   // "a|b" -> { partner: [round nos], opp: [round nos] }
     state.rounds.slice(0, ri).forEach(function (pr, pi) {
+      if (pr.draft) return;
       pr.courts.forEach(function (c) {
         function note(kind, a, b) {
           var k = pairKey(a, b); seenIn[k] = seenIn[k] || { partner: [], opp: [] };
           seenIn[k][kind].push(pi + 1);
         }
         if (c.type === "doubles") {
-          note("partner", c.teamA[0], c.teamA[1]); note("partner", c.teamB[0], c.teamB[1]);
+          if (c.teamA.length === 2) note("partner", c.teamA[0], c.teamA[1]);
+          if (c.teamB.length === 2) note("partner", c.teamB[0], c.teamB[1]);
         }
         c.teamA.forEach(function (a) { c.teamB.forEach(function (b) { note("opp", a, b); }); });
       });
@@ -1897,11 +2041,18 @@
     return r.courts.map(function (c) {
       var notes = [], level = "none";
       var all = c.teamA.concat(c.teamB);
+      var short = courtShort(c);
       var key = all.slice().sort(function (x, y) { return x - y; }).join(",");
-      var sameFour = c.type === "doubles" ? hist.foursomes[key] : hist.opponents[pairKey(c.teamA[0], c.teamB[0])];
+      var sameFour = short > 0 ? false :
+        (c.type === "doubles" ? hist.foursomes[key] : hist.opponents[pairKey(c.teamA[0], c.teamB[0])]);
       if (sameFour) level = "red";
+      if (short > 0) {
+        notes.push(plural(all.length, "player") + " on court — tap + to add someone");
+        level = "amber";
+      }
       if (c.type === "doubles") {
         [c.teamA, c.teamB].forEach(function (t) {
+          if (t.length < 2) return;
           var s = seenIn[pairKey(t[0], t[1])];
           if (s && s.partner.length) { notes.push(nameOf(t[0]) + " & " + nameOf(t[1]) + " partnered in R" + s.partner.join(", R")); if (level === "none") level = "amber"; }
         });
@@ -1928,8 +2079,9 @@
   }
   function clashNoteHtml(cl) {
     if (!cl || cl.level === "none") return "";
+    var lead = cl.level === "red" ? "Repeat match: " : (/on court/.test(cl.notes[0]) ? "" : "Played before: ");
     return '<p class="clash-note ' + cl.level + '" title="' + esc(cl.notes.join(" · ")) + '">' +
-      (cl.level === "red" ? "Repeat match: " : "Played before: ") + esc(cl.notes.join(" · ")) + "</p>";
+      lead + esc(cl.notes.join(" · ")) + "</p>";
   }
 
   /* keep the courts in walking order so the ◀ ▶ arrows mean "along the fence" */
@@ -1980,12 +2132,22 @@
       return best;
     }
 
-    var singles = -1;
-    r.courts.forEach(function (c, ci) { if (singles < 0 && c.type === "singles") singles = ci; });
+    var singles = -1, gap = -1;
+    r.courts.forEach(function (c, ci) {
+      if (singles < 0 && c.type === "singles") singles = ci;
+      if (gap < 0 && courtShort(c) > 0) gap = ci;
+    });
     var used = r.courts.map(function (c) { return String(c.label); });
     var spare = parseCourts().filter(function (l) { return used.indexOf(l) < 0; });
 
-    if (singles >= 0 && waiting.length >= 1) {
+    if (gap >= 0) {
+      /* a court is a player short (someone was taken off by hand) — fill it */
+      var g = r.courts[gap];
+      var side = g.teamA.length < teamSize(g) ? "A" : "B";
+      g["team" + side].push(id);
+      putOnCourt(r, id);
+      msg = name + " fills the spare spot on court " + g.label + ".";
+    } else if (singles >= 0 && waiting.length >= 1) {
       var c = r.courts[singles];
       var mate = bestOf(1, function (p) { return { type: "doubles", teamA: c.teamA.concat([id]), teamB: c.teamB.concat([p[0]]) }; })[0];
       c.type = "doubles"; c.teamA.push(id); c.teamB.push(mate);
@@ -2045,33 +2207,57 @@
     var r = state.rounds[roundIdx];
     var c = r.courts[courtIdx];
     var avail = availablePlayers(r);
-    if (avail.length < 2) {
-      toast("Need two players who aren't already on a court — tick more people in, or add them to the roster.", "warn");
+    if (!avail.length) {
+      toast("Nobody spare to bring on — the court keeps its + spots; tick someone in and tap a + later.", "warn");
       return;
     }
-    var opts = availableOptionsHtml(avail);
+    var opts = '<option value="">— nobody yet —</option>' + availableOptionsHtml(avail);
     var bar = document.createElement("div");
     bar.className = "swap-bar"; bar.id = "swap-bar";
-    bar.innerHTML = "<span>Making <strong>Court " + esc(c.label) + "</strong> doubles — add</span>" +
+    bar.innerHTML = "<span><strong>Court " + esc(c.label) + "</strong> is doubles now — add</span>" +
       '<select id="mkd-a">' + opts + "</select><span>and</span>" +
       '<select id="mkd-b">' + opts + "</select>" +
       '<button class="btn" id="mkd-go">Add players</button>' +
-      '<button class="btn quiet" id="mkd-cancel">Cancel</button>';
+      '<button class="btn quiet" id="mkd-cancel">Leave the spots empty</button>';
     byId("round-" + (roundIdx + 1)).appendChild(bar);
-    byId("mkd-b").selectedIndex = Math.min(1, avail.length - 1);
+    byId("mkd-a").selectedIndex = 1;
+    byId("mkd-b").selectedIndex = Math.min(2, avail.length);
 
     byId("mkd-go").addEventListener("click", function () {
-      var a = parseInt(byId("mkd-a").value, 10);
-      var b = parseInt(byId("mkd-b").value, 10);
-      if (!a || !b) return;
-      if (a === b) { toast("Pick two different players.", "warn"); return; }
-      c.type = "doubles";
-      c.teamA.push(a);
-      c.teamB.push(b);
-      putOnCourt(r, a); putOnCourt(r, b);
+      var a = parseInt(byId("mkd-a").value, 10) || 0;
+      var b = parseInt(byId("mkd-b").value, 10) || 0;
+      if (!a && !b) { removeSwapBar(); return; }
+      if (a && a === b) { toast("Pick two different players.", "warn"); return; }
+      if (a && c.teamA.length < 2) { c.teamA.push(a); putOnCourt(r, a); }
+      else if (a && c.teamB.length < 2) { c.teamB.push(a); putOnCourt(r, a); }
+      if (b && c.teamB.length < 2) { c.teamB.push(b); putOnCourt(r, b); }
+      else if (b && c.teamA.length < 2) { c.teamA.push(b); putOnCourt(r, b); }
       save(); renderAll();
     });
     byId("mkd-cancel").addEventListener("click", function () { removeSwapBar(); });
+  }
+
+  /* The Singles / Doubles switch under each court.
+       doubles -> singles : one player stays on each side, the other two sit
+       singles -> doubles : the court gets two + spots and the picker opens */
+  function setCourtType(roundIdx, courtIdx, type) {
+    var r = state.rounds[roundIdx];
+    var c = r.courts[courtIdx];
+    if (!c || c.type === type) return;
+    removeSwapBar(); swapSel = null;
+    if (type === "singles") {
+      var extra = c.teamA.slice(1).concat(c.teamB.slice(1));
+      c.teamA = c.teamA.slice(0, 1); c.teamB = c.teamB.slice(0, 1);
+      extra.forEach(function (id) { r.byes.push(id); });
+      c.type = "singles";
+      save(); renderAll();
+      toast("Court " + c.label + " is singles" + (extra.length ? " — " + extra.map(nameOf).join(" and ") + " now sitting out." : "."), "ok");
+    } else {
+      c.type = "doubles";
+      save(); renderAll();
+      if (availablePlayers(r).length) showMakeDoublesBar(roundIdx, courtIdx);
+      else toast("Court " + c.label + " is doubles — tap a name then a + to fill the spare spots.", "ok");
+    }
   }
 
   function markSelected() {
@@ -2324,7 +2510,7 @@
     byId("stat-strip").innerHTML =
       '<div class="stat"><b>' + inCount + "</b><span>Here today</span></div>" +
       '<div class="stat"><b>' + courts + "</b><span>Courts</span></div>" +
-      '<div class="stat"><b>' + state.rounds.length + "</b><span>Rounds done</span></div>";
+      '<div class="stat"><b>' + savedRounds().length + "</b><span>Rounds saved</span></div>";
   }
 
   /* ---------------- setup rendering ---------------- */
@@ -2363,19 +2549,23 @@
     });
     selA.value = keepA; selB.value = keepB;
 
-    var has = state.rounds.length > 0;
-    byId("reroll").style.display = has ? "" : "none";
-    byId("delete-last").style.display = has ? "" : "none";
-    byId("generate").textContent = "Generate round " + (state.rounds.length + 1);
-    byId("qb-generate").textContent = "Generate round " + (state.rounds.length + 1);
+    var nextNo = savedRounds().length + 1;
+    var genLabel = draftRound() ? "Re-draw the draft (round " + nextNo + ")" : "Generate round " + nextNo;
+    byId("generate").textContent = genLabel;
+    byId("qb-generate").textContent = genLabel;
     byId("qb-info").innerHTML = "<b>" + pool.length + "</b> here today · " +
       (info.text || "no matches yet");
   }
 
   /* ---------------- round rendering ---------------- */
 
-  function nameSpan(roundIdx, path, id) {
-    return '<span class="p-name" data-round="' + roundIdx + '" data-path="' + esc(JSON.stringify(path)) + '">' + esc(nameOf(id)) + "</span>";
+  function nameSpan(roundIdx, path, id, emptyText) {
+    var attrs = ' data-round="' + roundIdx + '" data-path="' + esc(JSON.stringify(path)) + '"';
+    if (id === undefined) {
+      /* an empty spot: tap a name, then this, to move them here */
+      return '<span class="p-empty" title="Tap a name, then here, to move them in"' + attrs + ">" + (emptyText || "+") + "</span>";
+    }
+    return '<span class="p-name"' + attrs + ">" + esc(nameOf(id)) + "</span>";
   }
 
   function courtLinesSvg() {
@@ -2405,7 +2595,7 @@
     function slot(label) {
       var ci = byLabel[label];
       if (ci === undefined) {
-        return '<div class="court-slot off"><div class="court-viz off" role="group" aria-label="Court ' + esc(label) + ', closed">' +
+        return '<div class="court-slot off"><div class="court-viz off" role="group" aria-label="Court ' + esc(label) + ', closed" data-open-court="' + esc(label) + '" data-open-round="' + ri + '">' +
           courtLinesSvg() + '<div class="court-centre"><span class="court-no-mark">' + esc(label) + "</span></div>" +
           '<span class="off-tag">closed</span></div><div class="court-tools"><button class="btn quiet sm">&nbsp;</button></div></div>';
       }
@@ -2454,22 +2644,33 @@
            right on screen. ◀ / ▶ mean LEFT / RIGHT AS YOU SEE IT: right is the
            next lower number, left the next higher. */
         '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="1" data-move-round="' + ri + '" title="Move this group one court to the left">&#9664;</button>' +
-        (isS ? '<button class="btn quiet sm make-dbl" data-mkd="' + ci + '" data-mkd-round="' + ri + '">+ Make doubles</button>' : "") +
+        courtTypeSeg(ri, ci, isS) +
         '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="-1" data-move-round="' + ri + '" title="Move this group one court to the right">&#9654;</button>' +
         "</div></div>";
     }
     return html;
   }
 
+  /* the Singles / Doubles switch under a court */
+  function courtTypeSeg(ri, ci, isS) {
+    return '<div class="seg ct-seg" role="group" aria-label="Singles or doubles">' +
+      '<button data-ctype="singles" data-ct-court="' + ci + '" data-ct-round="' + ri + '"' + (isS ? ' class="active"' : "") + ">Singles</button>" +
+      '<button data-ctype="doubles" data-ct-court="' + ci + '" data-ct-round="' + ri + '"' + (isS ? "" : ' class="active"') + ">Doubles</button></div>";
+  }
+
   function roundTableHtml(r, ri) {
     var html = '<div class="tbl-wrap"><table class="sheet round-table"><thead><tr>' +
       "<th>Court</th><th>Team A</th><th></th><th>Team B</th></tr></thead><tbody>";
     r.courts.forEach(function (c, ci) {
-      var a = c.teamA.map(function (id, i) { return nameSpan(ri, { court: ci, side: "A", idx: i }, id); }).join(" &amp; ");
-      var b = c.teamB.map(function (id, i) { return nameSpan(ri, { court: ci, side: "B", idx: i }, id); }).join(" &amp; ");
+      var size = teamSize(c), ai = [], bi = [];
+      for (var i = 0; i < size; i++) {
+        ai.push(nameSpan(ri, { court: ci, side: "A", idx: i }, c.teamA[i]));
+        bi.push(nameSpan(ri, { court: ci, side: "B", idx: i }, c.teamB[i]));
+      }
+      var a = ai.join(" &amp; "), b = bi.join(" &amp; ");
       var cl = curClashes[ci];
-      html += '<tr class="' + (cl && cl.level !== "none" ? "clash-" + cl.level : "") + '"><td>' + esc(c.label) +
-        (c.type === "singles" ? ' <span class="sgl-mark">singles</span> <button class="btn quiet sm make-dbl" data-mkd="' + ci + '" data-mkd-round="' + ri + '">+ Make doubles</button>' : "") +
+      html += '<tr class="' + (cl && cl.level !== "none" ? "clash-" + cl.level : "") + '"><td>' + esc(c.label) + " " +
+        courtTypeSeg(ri, ci, c.type === "singles") +
         ' <button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="-1" data-move-round="' + ri + '" title="Move this group up a court">&#9650;</button>' +
         '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="1" data-move-round="' + ri + '" title="Move this group down a court">&#9660;</button>' +
         "</td>" +
@@ -2489,7 +2690,7 @@
     var cur = currentRound();
     var html = '<span class="rs-lbl">Rounds</span>';
     state.rounds.forEach(function (r, ri) {
-      html += '<button type="button" class="rs-btn' + (ri === cur ? " active" : "") + '" data-rs="' + ri + '">R' + (ri + 1) + "</button>";
+      html += '<button type="button" class="rs-btn' + (ri === cur ? " active" : "") + (r.draft ? " draft" : "") + '" data-rs="' + ri + '">' + (r.draft ? "Draft" : "R" + (ri + 1)) + "</button>";
     });
     html += '<button type="button" class="rs-btn latest' + (cur === state.rounds.length - 1 ? " active" : "") + '" data-rs="' + (state.rounds.length - 1) + '">Latest</button>';
     host.innerHTML = html;
@@ -2517,7 +2718,7 @@
     var shown = currentRound();
     state.rounds.forEach(function (r, ri) {
       var block = document.createElement("section");
-      block.className = "round-block panel" + (ri === shown ? " tv-current" : "");
+      block.className = "round-block panel" + (ri === shown ? " tv-current" : "") + (r.draft ? " draft" : "");
       block.id = "round-" + (ri + 1);
 
       /* players deleted from the roster since this round was drawn have no
@@ -2538,7 +2739,9 @@
       if (late.length) metaBits.push(plural(late.length, "arrival") + " not yet on court");
 
       var html = '<div class="round-head">' +
-        '<p class="r-eyebrow">Order of Play · Round ' + (ri + 1) + "</p>" +
+        '<p class="r-eyebrow">Order of Play · ' + (r.draft
+          ? 'Round ' + (ri + 1) + ' <span class="draft-badge">Draft — not saved</span>'
+          : "Round " + (ri + 1)) + "</p>" +
         (metaBits.length ? '<p class="r-meta">' + esc(metaBits.join(" · ")) + "</p>" : "") +
         '<div class="r-actions">' +
         (isLast ? "" : '<button class="btn quiet sm r-toggle" data-toggle-round="' + ri + '" aria-expanded="' + (collapsed ? "false" : "true") + '">' + (collapsed ? "Show ▾" : "Hide ▴") + "</button>") +
@@ -2546,8 +2749,13 @@
         '<button data-view="courts"' + (state.viewMode === "courts" ? ' class="active"' : "") + ">Courts</button>" +
         '<button data-view="table"' + (state.viewMode === "table" ? ' class="active"' : "") + ">Table</button>" +
         "</div>" +
-        '<button class="btn sm" data-print-round="' + ri + '">Print</button></div>' +
-        "</div>";
+        (r.draft
+          ? '<button class="btn primary save-round" data-save-round="' + ri + '" title="Keep this round — it counts from now on">Save round ' + (ri + 1) + "</button>" +
+            '<button class="btn quiet sm del-round" data-del-round="' + ri + '">Throw away</button>'
+          : '<button class="btn sm" data-print-round="' + ri + '">Print</button>' +
+            '<button class="btn quiet sm del-round" data-del-round="' + ri + '" title="Delete this round (with Undo)">Delete</button>') +
+        "</div></div>" +
+        '<div class="round-confirm" id="round-confirm-' + ri + '"></div>';
 
       html += '<div class="r-body">';
       curClashes = courtClashes(r, ri);
@@ -2564,15 +2772,14 @@
         html += "</div>";
       }
 
-      if (byeNames.length) {
-        html += '<p class="byes-note">Sitting out: ';
-        html += r.byes.map(function (id, bi) { return nameSpan(ri, { bye: bi }, id).replace('class="p-name"', 'class="p-name sit-plate"'); }).join(" ");
-        html += "</p>";
-      }
+      html += '<p class="byes-note">Sitting out: ';
+      html += r.byes.map(function (id, bi) { return nameSpan(ri, { bye: bi }, id).replace('class="p-name"', 'class="p-name sit-plate"'); }).join(" ");
+      html += (byeNames.length ? " " : "") + nameSpan(ri, { bye: r.byes.length }, undefined, "+ sit out");
+      html += "</p>";
       if (restingNames.length) {
         html += '<p class="byes-note resting-note">Not here today: ' + esc(restingNames.join(", ")) + "</p>";
       }
-      html += '<p class="swap-hint">Fix by hand: tap a name, then tap another to swap them. Amber or red courts repeat an earlier round.</p>';
+      html += '<p class="swap-hint">Fix by hand: tap a name, then another to swap them, a + to move them there, a closed court to open it, or + sit out. Amber or red courts repeat an earlier round.</p>';
       html += "</div>";
 
       block.innerHTML = html;
@@ -2603,10 +2810,21 @@
       });
     });
     host.querySelectorAll("[data-redraw]").forEach(function (btn) {
-      btn.addEventListener("click", function () { makeRound(true); });
+      btn.addEventListener("click", function () { makeRound(); });
+    });
+    host.querySelectorAll("[data-save-round]").forEach(function (btn) {
+      btn.addEventListener("click", function () { saveRound(parseInt(btn.getAttribute("data-save-round"), 10)); });
+    });
+    host.querySelectorAll("[data-del-round]").forEach(function (btn) {
+      btn.addEventListener("click", function () { deleteRound(parseInt(btn.getAttribute("data-del-round"), 10)); });
+    });
+    host.querySelectorAll("[data-open-court]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        openCourtWith(parseInt(el.getAttribute("data-open-round"), 10), el.getAttribute("data-open-court"));
+      });
     });
 
-    host.querySelectorAll(".p-name").forEach(function (el) {
+    host.querySelectorAll(".p-name, .p-empty").forEach(function (el) {
       el.addEventListener("click", function () {
         onNameClick(parseInt(el.getAttribute("data-round"), 10), JSON.parse(el.getAttribute("data-path")), el);
       });
@@ -2625,11 +2843,12 @@
         );
       });
     });
-    host.querySelectorAll("[data-mkd]").forEach(function (btn) {
+    host.querySelectorAll("[data-ctype]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        showMakeDoublesBar(
-          parseInt(btn.getAttribute("data-mkd-round"), 10),
-          parseInt(btn.getAttribute("data-mkd"), 10)
+        setCourtType(
+          parseInt(btn.getAttribute("data-ct-round"), 10),
+          parseInt(btn.getAttribute("data-ct-court"), 10),
+          btn.getAttribute("data-ctype")
         );
       });
     });
@@ -2649,7 +2868,7 @@
   /* every court label used today, in a sensible order */
   function allCourtLabels() {
     var seen = {}, out = [];
-    state.rounds.forEach(function (r) {
+    savedRounds().forEach(function (r) {
       r.courts.forEach(function (c) {
         if (!seen[c.label]) { seen[c.label] = true; out.push(c.label); }
       });
@@ -2663,7 +2882,8 @@
     var labels = allCourtLabels();
     if (!labels.length) return '<p class="inline-note">No rounds yet.</p>';
 
-    var anyByes = state.rounds.some(function (r) { return r.byes.length; });
+    var rounds = savedRounds();
+    var anyByes = rounds.some(function (r) { return r.byes.length; });
     var cols = 1 + labels.length + (anyByes ? 1 : 0);
 
     var html = '<div class="day-scroll"><div class="timeline" style="grid-template-columns: auto repeat(' +
@@ -2677,7 +2897,7 @@
     if (anyByes) html += '<div class="tl-cell tl-head">Sitting out</div>';
 
     /* one row per round */
-    state.rounds.forEach(function (r, ri) {
+    rounds.forEach(function (r, ri) {
       var byLabel = {};
       r.courts.forEach(function (c) { byLabel[c.label] = c; });
 
@@ -2710,13 +2930,14 @@
   }
 
   function dayTableHtml() {
-    var cols = state.rounds.length;
+    var rounds = savedRounds();
+    var cols = rounds.length;
     var html = '<div class="day-scroll"><table class="sheet"><thead><tr><th style="text-align:left;">Player</th>';
     for (var i = 1; i <= cols; i++) html += "<th>R" + i + "</th>";
     html += "</tr></thead><tbody>";
 
     var wasInvolved = {};
-    state.rounds.forEach(function (r) {
+    rounds.forEach(function (r) {
       r.courts.forEach(function (c) {
         c.teamA.concat(c.teamB).forEach(function (id) { wasInvolved[id] = true; });
       });
@@ -2726,7 +2947,7 @@
     state.roster.forEach(function (p) {
       if (!wasInvolved[p.id] && !p.playing) return;
       html += '<tr><td class="pl">' + esc(p.name) + "</td>";
-      state.rounds.forEach(function (r) {
+      rounds.forEach(function (r) {
         var cell = null, cls = "";
         r.courts.forEach(function (c) {
           if (c.teamA.indexOf(p.id) !== -1 || c.teamB.indexOf(p.id) !== -1) {
@@ -2746,18 +2967,14 @@
 
   function renderDay() {
     var panel = byId("day-panel");
-    if (!state.rounds.length) { panel.style.display = "none"; return; }
+    var rounds = savedRounds();
+    if (!rounds.length) { panel.style.display = "none"; return; }
     panel.style.display = "";
 
     byId("dv-timeline").className = state.dayView === "timeline" ? "active" : "";
     byId("dv-table").className = state.dayView === "table" ? "active" : "";
 
-    var onCourt = 0;
-    if (state.rounds.length) {
-      var last = state.rounds[state.rounds.length - 1];
-      last.courts.forEach(function (c) { onCourt += c.teamA.length + c.teamB.length; });
-    }
-    byId("day-sub").textContent = plural(state.rounds.length, "round") + " so far · " +
+    byId("day-sub").textContent = plural(rounds.length, "round") + " saved so far · " +
       allCourtLabels().length + " courts in play";
 
     if (state.dayView === "timeline") {
@@ -2911,7 +3128,7 @@
       hit.playing = true;
       inp.value = "";
       save(); renderAll();
-      toast(hit.name + " ticked in." + (state.rounds.length ? " Find them under round " + state.rounds.length + " to slot them in." : ""), "ok");
+      toast(hit.name + " ticked in." + (state.rounds.length ? " Find them under " + roundTitle(state.rounds.length - 1) + " to slot them in." : ""), "ok");
       return;
     }
     state.roster.push({ id: state.nextId++, name: v, w: false, j: false, h: false, playing: true, member: false });
@@ -3018,19 +3235,7 @@
     if (box.classList.contains("show")) byId("courts-input").focus();
   });
 
-  byId("generate").addEventListener("click", function () { makeRound(false); });
-  byId("reroll").addEventListener("click", function () { makeRound(true); });
-
-  byId("delete-last").addEventListener("click", function () {
-    if (!state.rounds.length) return;
-    askConfirm("setup-confirm", "Delete round " + state.rounds.length + "?", "Delete round", function () {
-      var gone = state.rounds.pop();
-      save(); renderAll();
-      toast("Round deleted.", null, "Undo", function () {
-        state.rounds.push(gone); save(); renderAll();
-      });
-    });
-  });
+  byId("generate").addEventListener("click", function () { makeRound(); });
 
   byId("print-day").addEventListener("click", function () { printElement(byId("day-panel")); });
 
@@ -3068,7 +3273,7 @@
     bar.querySelector("#qb-walkin").addEventListener("keydown", function (e) {
       if (e.key === "Enter") { e.preventDefault(); walkIn(e.target); }
     });
-    bar.querySelector("#qb-generate").addEventListener("click", function () { makeRound(false); });
+    bar.querySelector("#qb-generate").addEventListener("click", function () { makeRound(); });
     bar.querySelector("#qb-top").addEventListener("click", function () {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
