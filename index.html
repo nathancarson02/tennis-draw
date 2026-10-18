@@ -484,7 +484,7 @@
     color: var(--purple); font-weight: 700; margin: 0;
   }
   .round-head .r-meta { color: var(--muted); font-size: 0.85rem; margin: 0; }
-  .round-head .r-actions { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; }
+  .round-head .r-actions { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 
   /* The courts are laid out by the site map (section 9b below). Names and
      the ghost digit size off each court's own width (cqw units), so
@@ -815,27 +815,7 @@
   /* ============================================================
      11. STICKY QUICK BAR
      ============================================================ */
-  #quick-bar {
-    position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 110%);
-    z-index: 80; width: min(96vw, 1180px);
-    display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
-    padding: 0.65rem 1rem; margin-bottom: 0.9rem;
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-    border: 1px solid var(--line); border-radius: var(--r-md);
-    box-shadow: var(--shadow-3);
-    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
-  }
-  #quick-bar.show { transform: translate(-50%, 0); }
-  #quick-bar .qb-info { font-size: 0.86rem; color: var(--ink-soft); }
-  #quick-bar .qb-info b { color: var(--brand); }
-  #quick-bar .spacer { flex: 1; }
-  /* "someone walked in" — always to hand, wherever you've scrolled to */
-  #quick-bar #qb-walkin {
-    font: inherit; font-size: 0.9rem; min-width: 15rem;
-    padding: 0.45rem 0.7rem; border-radius: var(--r-sm);
-    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
-  }
+  /* replaced by the always-on bottom bar, #step-foot (section 17) */
 
   /* ============================================================
      12. HELP
@@ -865,7 +845,6 @@
     /* SWITCHED OFF (Nathan, 27 Sep 2026): one logo only — the big one under
        the top row of the court board (.site-row.bottom::before). The tiling
        code is left in place; delete this line to bring the tiles back. */
-    display: none;
     position: absolute; z-index: 20; pointer-events: none; user-select: none;
     top: var(--logo-wm-top); left: 50%; transform: translateX(-50%);
     width: min(var(--logo-wm-width), 92vw);
@@ -876,6 +855,9 @@
        the PNG leave the page untouched — only the logo's own strokes show.
        That's what stops it reading as a pale sheet laid over the content. */
     mix-blend-mode: var(--logo-wm-blend);
+    /* last on purpose: the display:flex above used to win and the tiles
+       came back (found 18 Oct 2026). Delete this line to switch them on. */
+    display: none;
   }
   /* flex:0 0 auto stops the tiles being squashed by the host's fixed height */
   #logo-watermark img {
@@ -933,7 +915,7 @@
   #tv-exit { position: fixed; right: 1rem; bottom: 1rem; z-index: 60; opacity: 0.55; }
   #tv-exit:hover { opacity: 1; }
   :root[data-tv="on"] #roster-panel, :root[data-tv="on"] #setup-panel, :root[data-tv="on"] #day-panel,
-  :root[data-tv="on"] .help, :root[data-tv="on"] #quick-bar, :root[data-tv="on"] #notice-host,
+  :root[data-tv="on"] .help, :root[data-tv="on"] #notice-host,
   :root[data-tv="on"] .court-tools, :root[data-tv="on"] .swap-hint, :root[data-tv="on"] .arrived,
   :root[data-tv="on"] .swap-bar, :root[data-tv="on"] .r-actions, :root[data-tv="on"] .clash-note,
   :root[data-tv="on"] .masthead .stat-strip, :root[data-tv="on"] .masthead .meta,
@@ -981,7 +963,7 @@
       --shadow-1: none; --shadow-2: none; --shadow-3: none;
     }
     body.print-mode .page,
-    body.print-mode #quick-bar,
+    body.print-mode #step-foot,
     body.print-mode #logo-watermark,
     body.print-mode #event-watermark,
     body.print-mode #notice-host { display: none !important; }
@@ -1050,10 +1032,12 @@
     .court-slot.off, .site-compass { display: none; }
     .site-row:empty { display: none; }
     .court-picker { grid-template-columns: repeat(7, 2rem); }
-    #quick-bar #qb-walkin { min-width: 0; flex: 1 1 100%; }
+
     /* two phone-width columns can't fit name + four chips — one readable
        column beats two truncated ones */
-    .roster-grid { grid-template-columns: 1fr; }
+    .roster-grid { grid-template-columns: minmax(0, 1fr); }   /* a name box can't push the tile past the panel */
+    .player { min-width: 0; }
+    .player .pname { width: 0; }   /* flex:1 still fills the row; this drops the input's built-in ~20-letter width */
     .panel { padding: 1.2rem 1rem; }
   }
   @media (max-width: 420px) {
@@ -1089,6 +1073,174 @@
   }
   :root[data-theme="dark"] #event-watermark { opacity: 0.26; }
   #event-watermark img { display: block; width: 100%; height: auto; flex: 0 0 auto; }
+
+  /* ============================================================
+     17. STEPS — Players → Courts → Draw & fix → Show  (18 Oct 2026)
+     One step on screen at a time, picked by <html data-step>.
+     ============================================================ */
+  .stat-strip { display: none; }            /* the step bar carries these numbers now */
+  .masthead { padding-bottom: 1rem; margin-bottom: 1rem; }
+  .masthead-mark { width: min(var(--logo-mark-width), 200px); margin-bottom: 0.4rem; }
+  h1 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); }
+  .page { padding-top: 2rem; padding-bottom: 9rem; }   /* room for the bottom bar */
+
+  #step-bar {
+    position: sticky; top: 0.5rem; z-index: 40;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem;
+    padding: 0.4rem; margin: 0 0 1.2rem;
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-2);
+  }
+  .step-btn {
+    position: relative; display: flex; align-items: center; gap: 0.65rem; min-width: 0;
+    font: inherit; text-align: left; cursor: pointer; color: var(--ink);
+    padding: 0.55rem 0.75rem; border-radius: var(--r-md);
+    border: 1px solid transparent; background: transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .step-btn:hover { background: var(--surface-3); }
+  .step-btn .sn {
+    flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-weight: 800; font-size: 0.9rem;
+    border: 1.5px solid var(--line); color: var(--muted);
+  }
+  .step-btn .st { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+  .step-btn b { font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .step-btn small { font-size: 0.76rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .step-btn.active { background: var(--brand-tint); border-color: var(--brand); }
+  .step-btn.active .sn { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+  .step-btn.active small { color: var(--ink-soft); }
+
+  .step-pane { display: none; }
+  :root[data-step="who"] .step-pane[data-pane~="who"],
+  :root[data-step="courts"] .step-pane[data-pane~="courts"],
+  :root[data-step="draw"] .step-pane[data-pane~="draw"],
+  :root[data-step="show"] .step-pane[data-pane~="show"] { display: block; }
+
+  /* the bottom bar: summary on the left, the next thing to do on the right */
+  #step-foot {
+    position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
+    z-index: 80; width: min(96vw, 1180px); margin-bottom: 0.8rem;
+    display: flex; align-items: center; gap: 0.6rem 0.9rem; flex-wrap: wrap;
+    padding: 0.6rem 0.7rem 0.6rem 0.9rem;
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    box-shadow: var(--shadow-3);
+  }
+  .sf-left { display: flex; gap: 0.5rem; align-items: center; flex: 1 1 14rem; min-width: 0; }
+  .sf-right { display: flex; gap: 0.5rem; align-items: center; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+  .sf-info { font-size: 0.92rem; color: var(--ink-soft); }
+  .sf-info b { color: var(--brand); font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+  #sf-walkin { flex: 1 1 auto; min-width: 0; max-width: 24rem; font-size: 0.95rem; }
+  #notice-host { bottom: 6.2rem; }           /* toasts float above the bottom bar */
+
+  /* step 1: find box + bigger tick targets on touch screens */
+  .roster-find { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; margin-bottom: 1rem; }
+  .roster-find #new-name { flex: 1 1 18rem; font-size: 1rem; padding: 0.68rem 0.9rem; }
+  .roster-find .spacer { flex: 0 0 0.4rem; }
+  .player.filtered-out { display: none; }
+  #find-empty { margin: 0.6rem 0 0; }
+  @media (pointer: coarse) {
+    .player input[type="checkbox"] { width: 1.4rem; height: 1.4rem; }
+    .player { padding-top: 0.55rem; padding-bottom: 0.55rem; }
+  }
+  .day-reminder {
+    display: flex; align-items: center; gap: 0.5rem 0.9rem; flex-wrap: wrap;
+    padding: 0.55rem 0.6rem 0.55rem 0.9rem; margin-bottom: 1rem;
+    background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--ball);
+    border-radius: var(--r-sm); font-size: 0.9rem; color: var(--ink-soft);
+  }
+  #who-day-confirm .confirm-strip { margin: -0.4rem 0 1rem; }
+
+  /* step 2: what the draw will make, as big numbers, then the court map */
+  .shape-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 0.6rem; margin-bottom: 1.3rem; }
+  .shape-card { padding: 0.75rem 0.95rem; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); }
+  .shape-card b { display: block; font-family: var(--font-display); font-size: 2.1rem; font-weight: 400; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .shape-card span { font-size: 0.8rem; color: var(--muted); }
+  .shape-card.ppl b { color: var(--brand); }
+  .shape-card.sgl:not(.zero) { border-color: color-mix(in srgb, var(--ball) 65%, var(--line)); }
+  .shape-card.sit:not(.zero) { border-color: #E0A93A; }
+  .shape-card.zero { opacity: 0.5; }
+  .shape-note:empty { display: none; }
+  .shape-note { margin: 0 0 1.2rem; }
+  #setup-panel .controls-row { gap: 1.6rem 2.4rem; }
+  #court-picker { display: block; padding: 0; border: 0; background: none; }
+  #court-picker .court-picker { grid-template-columns: repeat(7, minmax(2.4rem, 4rem)); gap: 0.4rem; padding: 0.8rem; }
+  #court-picker .court-picker .pc { font-size: 1.1rem; }
+
+  /* steps 3 + 4: only the round picked in the R1 R2 … strip is on screen */
+  .step-pane .round-block:not(.tv-current) { display: none; }
+  .step-pane .round-block.tv-current .r-body { display: block; }
+  .step-pane .r-toggle { display: none !important; }
+  #round-strip { position: static; }
+  .empty-step {
+    text-align: center; padding: 3rem 1.2rem; margin-bottom: 1.4rem;
+    border: 1px dashed var(--line); border-radius: var(--r-lg);
+    background: var(--surface); color: var(--muted);
+  }
+  .empty-step p { margin: 0.3rem 0; }
+  .empty-step strong { color: var(--ink); font-size: 1.2rem; font-family: var(--font-display); font-weight: 400; }
+
+  /* step 4 "Show": the same board, read-only and big — TV mode with the steps still on */
+  :root[data-step="show"] .court-tools, :root[data-step="show"] .swap-hint,
+  :root[data-step="show"] .arrived, :root[data-step="show"] .swap-bar,
+  :root[data-step="show"] .r-actions, :root[data-step="show"] .clash-note,
+  :root[data-step="show"] .p-empty, :root[data-step="show"] .round-confirm,
+  :root[data-step="show"] .resting-note { display: none !important; }
+  :root[data-step="show"] .court-slot .court-viz { box-shadow: none !important; }
+  :root[data-step="show"] .p-name { pointer-events: none; }
+  :root[data-step="show"] .court-viz .p-name { font-size: clamp(1.1rem, 2.4vw, 2.3rem); }
+  :root[data-step="show"] #day-panel { margin-top: 2rem; }
+
+  /* TV mode wins over the steps: just the board, whatever step you were on */
+  :root[data-tv="on"] #step-bar, :root[data-tv="on"] #step-foot, :root[data-tv="on"] #rounds-empty,
+  :root[data-tv="on"] .step-pane:not([data-pane~="draw"]) { display: none !important; }
+  :root[data-tv="on"] .step-pane[data-pane~="draw"] { display: block !important; }
+  :root[data-tv="on"] .page { padding-bottom: 2rem; }
+  @media print { #step-bar, #step-foot { display: none !important; } }
+
+  @media (max-width: 760px) {
+    .step-btn { padding: 0.5rem 0.5rem; gap: 0.45rem; }
+    .step-btn .sn { width: 1.7rem; height: 1.7rem; font-size: 0.8rem; }
+    .step-btn b { font-size: 0.86rem; }
+  }
+  @media (max-width: 560px) {
+    #step-bar { top: 0; gap: 0.2rem; padding: 0.3rem; }
+    .step-btn { flex-direction: column; gap: 0.2rem; padding: 0.4rem 0.15rem; text-align: center; }
+    .step-btn .st { align-items: center; }
+    .step-btn b { font-size: 0.76rem; }
+    .step-btn small { display: none; }
+    #step-foot {
+      width: 100%; margin: 0; border-radius: var(--r-md) var(--r-md) 0 0;
+      padding: 0.55rem 0.7rem calc(0.55rem + env(safe-area-inset-bottom));
+    }
+    .sf-left { flex-basis: 100%; }
+    .sf-left:empty { display: none; }
+    .sf-right { width: 100%; flex-wrap: nowrap; }
+    .sf-right .btn { flex: 1 1 auto; }
+    .sf-right .btn.big { flex: 2 1 auto; padding: 0.75rem 0.6rem; white-space: normal; }
+    #sf-walkin { max-width: none; }
+    #notice-host { bottom: 8.5rem; }
+    .roster-find #new-name { flex-basis: 100%; }
+    .roster-find .spacer { display: none; }
+    .roster-find .btn { flex: 1 1 0; padding: 0.5rem 0.3rem; font-size: 0.8rem; white-space: normal; }
+    /* phone masthead: logo + title only, so the step itself starts high up */
+    .masthead { padding-bottom: 0.7rem; margin-bottom: 0.7rem; }
+    .masthead .eyebrow, .masthead .court-lines { display: none; }
+    .masthead-tools { margin-bottom: 0.5rem; }
+    .masthead-mark { width: 140px; margin-bottom: 0.3rem; }
+    h1 { font-size: 1.35rem; margin-bottom: 0.2rem; }
+    .meta { font-size: 0.8rem; }
+    .page { padding-top: 1rem; }
+    .round-head .r-actions { margin-left: 0; }
+    .shape-cards { grid-template-columns: repeat(3, 1fr); }
+    .shape-card b { font-size: 1.7rem; }
+    #court-picker .court-picker { grid-template-columns: repeat(7, minmax(0, 1fr)); width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -1125,15 +1277,39 @@
     <div class="stat-strip" id="stat-strip"></div>
   </header>
 
-  <!-- ================= ROSTER ================= -->
+  <!-- ================= STEP BAR =================
+       The day runs left to right: who's here -> courts -> draw & fix -> show.
+       Only one step is on screen at a time (html[data-step]); every step
+       works on the same saved data, so jumping back is always safe. -->
+  <nav id="step-bar" aria-label="Steps">
+    <button type="button" class="step-btn" data-go="who"><span class="sn">1</span><span class="st"><b>Players</b><small id="sb-who"></small></span></button>
+    <button type="button" class="step-btn" data-go="courts"><span class="sn">2</span><span class="st"><b>Courts</b><small id="sb-courts"></small></span></button>
+    <button type="button" class="step-btn" data-go="draw"><span class="sn">3</span><span class="st"><b>Draw &amp; fix</b><small id="sb-draw"></small></span></button>
+    <button type="button" class="step-btn" data-go="show"><span class="sn">4</span><span class="st"><b>Show</b><small id="sb-show"></small></span></button>
+  </nav>
+
+  <!-- ================= STEP 1: ROSTER ================= -->
+  <div class="step-pane" data-pane="who">
+  <div id="who-day-note"></div>
   <section class="panel" id="roster-panel">
     <div class="panel-head">
-      <h2>Roster</h2>
+      <h2>Who's here today?</h2>
       <p class="sub" id="roster-count"></p>
       <div class="head-actions">
         <button class="btn sm" id="toggle-bulk">Bulk add</button>
         <button class="btn sm" id="toggle-manage">Select &amp; edit</button>
       </div>
+    </div>
+
+    <!-- one box does both: typing narrows the list below; Enter ticks a
+         known name in, or adds a new one as a visitor -->
+    <div class="roster-find">
+      <input type="text" id="new-name" placeholder="Find or add a name…" title="Typing narrows the list. Enter ticks a known name in, or adds a new one as a visitor." list="roster-names" autocomplete="off" aria-label="Find or add a name">
+      <datalist id="roster-names"></datalist>
+      <button class="btn" id="add-player">Tick in / add</button>
+      <span class="spacer"></span>
+      <button class="btn quiet" id="all-in">Tick everyone</button>
+      <button class="btn quiet" id="all-out">Untick everyone</button>
     </div>
 
     <div id="batch-host"></div>
@@ -1149,15 +1325,7 @@
     </div>
 
     <div id="roster-confirm"></div>
-
-    <div class="roster-actions">
-      <input type="text" id="new-name" placeholder="Someone walked in… type a name" size="24" list="roster-names">
-      <datalist id="roster-names"></datalist>
-      <button class="btn" id="add-player">Add player</button>
-      <span class="spacer"></span>
-      <button class="btn quiet" id="all-in">Tick everyone</button>
-      <button class="btn quiet" id="all-out">Untick everyone</button>
-    </div>
+    <p class="muted-note" id="find-empty" style="display:none;"></p>
 
     <!-- bulk add drawer -->
     <div class="drawer" id="bulk-drawer" style="display:none;">
@@ -1175,15 +1343,21 @@
       <div id="bulk-note"></div>
     </div>
   </section>
+  </div>
 
-  <!-- ================= ROUND SETUP ================= -->
+  <!-- ================= STEP 2: COURTS ================= -->
+  <div class="step-pane" data-pane="courts">
   <section class="panel" id="setup-panel">
     <div class="panel-head">
-      <h2>Next round</h2>
+      <h2>Courts for the next round</h2>
     </div>
+    <!-- what the draw will make from who's ticked in and the courts below -->
+    <div class="shape-cards" id="shape-cards"></div>
+    <p class="shape-note" id="shape-note"></p>
+    <div id="setup-warnings"></div>
     <div class="controls-row">
       <div class="field">
-        <label>Courts open today — tap to switch a court on or off</label>
+        <label>Courts open — tap a court to switch it on or off</label>
         <div class="court-picker" id="court-picker" role="group" aria-label="Courts open today"></div>
         <div class="picker-foot">
           <span id="picker-count"></span>
@@ -1195,7 +1369,7 @@
         </div>
       </div>
       <div class="field">
-        <label for="pin-a">Put these two together (optional)</label>
+        <label for="pin-a">Put these two together (optional, next round only)</label>
         <div style="display:flex; gap:0.45rem; align-items:center;">
           <select id="pin-a"><option value="">—</option></select>
           <span style="color:var(--muted); font-size:0.82rem;">with</span>
@@ -1203,20 +1377,21 @@
         </div>
       </div>
     </div>
-    <p class="shape-note" id="shape-note"></p>
-    <div id="setup-warnings"></div>
-    <div class="setup-buttons">
-      <button class="btn primary big" id="generate">Generate round</button>
-      <span style="flex:1"></span>
-    </div>
     <div id="setup-confirm"></div>
   </section>
+  </div>
 
-  <!-- ================= ROUNDS ================= -->
+  <!-- ================= STEPS 3 + 4: THE ROUNDS =================
+       One copy of the rounds serves both steps. On "Draw & fix" they can
+       be edited; on "Show" the same board goes read-only and big. -->
+  <div class="step-pane" data-pane="draw show">
+  <div class="empty-step" id="rounds-empty"></div>
   <nav id="round-strip" aria-label="Rounds" style="display:none;"></nav>
   <section id="rounds-container"></section>
+  </div>
 
-  <!-- ================= WHOLE DAY ================= -->
+  <!-- ================= STEP 4: WHOLE DAY ================= -->
+  <div class="step-pane" data-pane="show">
   <section class="panel" id="day-panel" style="display:none;">
     <div class="panel-head">
       <h2>Whole day</h2>
@@ -1238,16 +1413,18 @@
       <button class="btn danger" id="new-day">Start a new day (clears rounds, keeps roster)</button>
     </div>
   </section>
+  </div>
 
   <details class="help">
     <summary>How this works</summary>
     <ul>
-      <li><strong>Tick</strong> the players who are here today, then hit <strong>Generate round</strong>. That gives you a <strong>draft</strong> (dashed border). Fix it by hand if you like, then press <strong>Save round</strong> when it's actually being played. Generate again while a draft is showing and it's re-drawn, so unplayed rounds never pile up. Any saved round has a <strong>Delete</strong> button in its header (with Undo).</li>
+      <li>The day runs through four steps along the top: <strong>1 Players</strong> (tick who's here) → <strong>2 Courts</strong> (pick the open courts, see what that makes) → <strong>3 Draw &amp; fix</strong> → <strong>4 Show</strong>. Tap any step to jump back; nothing is lost. The big button at the bottom of the screen is always the next thing to do.</li>
+      <li><strong>Generate round</strong> gives you a <strong>draft</strong> (dashed border). Fix it by hand if you like, then press <strong>Save &amp; show</strong> when it's actually being played. Re-draw while a draft is showing and it's replaced, so unplayed rounds never pile up. Any saved round has a <strong>Delete</strong> button in its header (with Undo). From <strong>Show</strong>, <strong>Next round</strong> draws the next draft with the same courts.</li>
       <li>The <strong>M / V</strong> pill on each player marks <strong>member</strong> or <strong>visitor</strong>. It's a label for you at the desk — it does not change the draw.</li>
       <li><strong>Bulk add</strong> takes a whole list at once — paste names one per line or separated by commas.</li>
       <li><strong>Select &amp; edit</strong> turns the roster into a picker: click any tiles, then mark them member/visitor, set the W&nbsp;·&nbsp;J&nbsp;·&nbsp;H tags, tick them in, or delete the lot in one go. Nothing pops up — deletes ask once, inline, and can be undone.</li>
-      <li>The court board is drawn as the club really is: <strong>1–7 along the bottom fence, the clubhouse in the middle, 8–11 along the top</strong>, car park to the left. Courts you haven't opened stay on the map as faint outlines. Pick today's courts by tapping them on the mini map in <strong>Next round</strong>.</li>
-      <li><strong>Someone walked in?</strong> Type their name in the bar at the bottom of the screen (or the roster's add box). A known name is ticked in; a new one is added as a visitor. If a round is already drawn they appear under it in an amber <strong>Arrived after the draw</strong> strip — <strong>Slot in</strong> fits them into that round without moving anyone who's already on court (fills a sit-out, turns a singles court into doubles, or opens a spare court), or <strong>Re-draw</strong> shuffles the whole round again.</li>
+      <li>The court board is drawn as the club really is: <strong>1–7 along the bottom fence, the clubhouse in the middle, 8–11 along the top</strong>, car park to the left. Courts you haven't opened stay on the map as faint outlines. Pick today's courts by tapping them on the mini map in <strong>Courts</strong>.</li>
+      <li><strong>Someone walked in?</strong> Type their name in the box at the bottom of <strong>Draw &amp; fix</strong> (or the find box in <strong>Players</strong>). A known name is ticked in; a new one is added as a visitor. If a round is already drawn they appear under it in an amber <strong>Arrived after the draw</strong> strip — <strong>Slot in</strong> fits them into that round without moving anyone who's already on court (fills a sit-out, turns a singles court into doubles, or opens a spare court), or <strong>Re-draw</strong> shuffles the whole round again.</li>
       <li>Courts fill 4 at a time (doubles). A leftover pair becomes a <strong>singles</strong> match. Odd numbers mean someone <strong>sits</strong> — the tool rotates who, never the same person twice in a row.</li>
       <li>Each player can be tagged <strong>W</strong> (woman), <strong>J</strong> (junior) and/or <strong>H</strong> (hard hitter). The draw evens things out: women &amp; juniors get one per side and never more than two on a court; hard hitters are spread across the courts, and when two land on one court they're put on opposite sides of the net. These tags only ever show here in the roster — the draws just show names.</li>
       <li>Mixups avoid repeating <strong>partners</strong>, <strong>opponents</strong> and <strong>court-mates</strong> from earlier rounds today. If a hand-fix recreates an earlier match the court turns <strong>amber</strong> (two of them have played together or against each other) or <strong>red</strong> (the same four), with a note saying who and when.</li>
@@ -1263,6 +1440,8 @@
   </details>
 </div>
 
+<!-- the bottom bar: a summary + the next thing to do (filled by renderStepFoot) -->
+<div id="step-foot"></div>
 <div id="notice-host" aria-live="polite"></div>
 <div id="print-zone"></div>
 
@@ -1458,7 +1637,7 @@
     yes.focus();
   }
   function clearConfirms() {
-    ["roster-confirm", "setup-confirm", "day-confirm"].forEach(function (id) {
+    ["roster-confirm", "setup-confirm", "day-confirm", "who-day-confirm"].forEach(function (id) {
       var h = byId(id); if (h) h.innerHTML = "";
     });
     document.querySelectorAll(".round-confirm").forEach(function (h) { h.innerHTML = ""; });
@@ -1726,13 +1905,13 @@
   function makeRound() {
     clearConfirms();
     var pool = state.roster.filter(function (p) { return p.playing; }).map(function (p) { return p.id; });
-    if (pool.length < 2) { setNote("setup-warnings", "Tick at least 2 players in the roster first.", "warn"); return; }
+    if (pool.length < 2) { goStep("who"); toast("Tick at least 2 players first.", "warn"); return; }
 
     var labels = parseCourts();
-    if (!labels.length) { setNote("setup-warnings", "Enter at least one court number above.", "warn"); return; }
+    if (!labels.length) { goStep("courts"); toast("Open at least one court first.", "warn"); return; }
 
     /* the draw takes up to a second on a big day — show it's working first */
-    ["generate", "qb-generate", "reroll"].forEach(function (id) { var b = byId(id); if (b) { b.disabled = true; b.textContent = "Drawing…"; } });
+    document.querySelectorAll('[data-act="generate"]').forEach(function (b) { b.disabled = true; b.textContent = "Drawing…"; });
     setTimeout(function () { finishRound(pool, labels); }, 30);
   }
 
@@ -1753,17 +1932,18 @@
     var playing = pool.filter(function (id) { return byes.indexOf(id) === -1; });
 
     var courts = generateDraw(playing, labels, shape, hist, pin);
-    ["generate", "qb-generate", "reroll"].forEach(function (id) { var b = byId(id); if (b) b.disabled = false; });
-    if (!courts) { renderSetup(); setNote("setup-warnings", "Couldn't build a draw — check the court numbers and how many players are ticked in.", "warn"); return; }
+    if (!courts) {
+      goStep("courts");
+      setNote("setup-warnings", "Couldn't build a draw — check the court numbers and how many players are ticked in.", "warn");
+      return;
+    }
 
     var resting = state.roster.filter(function (p) { return !p.playing; }).map(function (p) { return p.id; });
     state.rounds.push({ courts: courts, byes: byes, resting: resting, draft: true });
     byId("pin-a").value = ""; byId("pin-b").value = ""; // pin is a one-round request
     tvRound = state.rounds.length - 1;
     save();
-    renderAll();
-    var blocks = document.querySelectorAll(".round-block");
-    if (blocks.length) blocks[blocks.length - 1].scrollIntoView({ behavior: "smooth", block: "start" });
+    goStep("draw");   // renders everything and scrolls to the top
   }
 
   /* Put a player on a court in this round: they can't also be sitting out
@@ -1791,7 +1971,9 @@
     if (!r || !r.draft) return;
     delete r.draft;
     swapSel = null;
-    save(); renderAll();
+    tvRound = ri;
+    save();
+    goStep("show");   // saved = being played, so straight to the big board
     toast("Round " + (ri + 1) + " saved.", "ok");
   }
 
@@ -2405,7 +2587,7 @@
   function layoutRosterColumns() {
     var grid = byId("roster-grid");
     if (!grid) return;
-    var n = grid.children.length;
+    var n = grid.querySelectorAll(".player:not(.filtered-out)").length;
     grid.style.gridAutoFlow = ""; grid.style.gridTemplateRows = ""; grid.style.gridTemplateColumns = "";
     if (!n) return;
     var cols = getComputedStyle(grid).gridTemplateColumns.split(" ").length;
@@ -2434,6 +2616,9 @@
       cb.setAttribute("aria-label", "Here today: " + p.name);
       cb.addEventListener("change", function () {
         p.playing = cb.checked;
+        /* ticked someone you searched for: clear the box, ready for the next name */
+        var find = byId("new-name");
+        if (find.value.trim()) { find.value = ""; find.focus(); }
         save(); renderRoster(); renderSetup(); renderStats();
       });
 
@@ -2484,11 +2669,32 @@
         });
       }
 
+      row.setAttribute("data-name", p.name.toLowerCase());
       grid.appendChild(row);
     });
 
     renderBatchBar();
     updateRosterCount();
+    applyRosterFilter();
+  }
+
+  /* The find box narrows the tiles to names containing what's typed.
+     Display only — it never ticks or changes anyone by itself. */
+  function applyRosterFilter() {
+    var q = byId("new-name").value.trim().toLowerCase();
+    var grid = byId("roster-grid"), shown = 0;
+    Array.prototype.forEach.call(grid.children, function (row) {
+      var hit = !q || row.getAttribute("data-name").indexOf(q) >= 0;
+      row.classList.toggle("filtered-out", !hit);
+      if (hit) shown++;
+    });
+    var empty = byId("find-empty");
+    if (q && !shown) {
+      empty.style.display = "";
+      empty.textContent = "No one called “" + byId("new-name").value.trim() + "” yet — press Enter (or Tick in / add) to add them as a visitor.";
+    } else {
+      empty.style.display = "none";
+    }
     layoutRosterColumns();
   }
 
@@ -2528,10 +2734,23 @@
       (offMap.length ? " (plus " + offMap.join(", ") + " off the map)" : "");
     var note = byId("shape-note");
     if (pool.length < 2) {
-      note.innerHTML = "Tick the players who are here today.";
+      note.innerHTML = "Tick the players who are here today (step 1) first.";
     } else {
-      note.innerHTML = "<strong>" + pool.length + " playing</strong> → " + (info.text || "no matches");
+      note.innerHTML = "";   // the shape cards say it now
     }
+
+    /* the same answer as big cards — what Generate will make right now */
+    var sh = info.shape;
+    var spare = Math.max(0, open.length - sh.doubles - sh.singles);
+    function card(n, label, kind) {
+      return '<div class="shape-card' + (kind ? " " + kind : "") + (n ? "" : " zero") + '"><b>' + n + "</b><span>" + label + "</span></div>";
+    }
+    byId("shape-cards").innerHTML = pool.length < 2 ? "" :
+      card(pool.length, "playing", "ppl") +
+      card(sh.doubles, sh.doubles === 1 ? "doubles court" : "doubles courts") +
+      card(sh.singles, "singles", "sgl") +
+      card(sh.byes, "sitting out", sh.byes ? "sit" : "") +
+      card(spare, spare === 1 ? "court spare" : "courts spare", "spare");
 
     if (info.shape.squeezed) {
       setNote("setup-warnings", "Not enough courts for everyone — extra players will sit. Add court numbers above if more are free.", "warn");
@@ -2548,13 +2767,7 @@
       selB.insertAdjacentHTML("beforeend", '<option value="' + p.id + '">' + esc(p.name) + "</option>");
     });
     selA.value = keepA; selB.value = keepB;
-
-    var nextNo = savedRounds().length + 1;
-    var genLabel = draftRound() ? "Re-draw the draft (round " + nextNo + ")" : "Generate round " + nextNo;
-    byId("generate").textContent = genLabel;
-    byId("qb-generate").textContent = genLabel;
-    byId("qb-info").innerHTML = "<b>" + pool.length + "</b> here today · " +
-      (info.text || "no matches yet");
+    renderStepUi();
   }
 
   /* ---------------- round rendering ---------------- */
@@ -2706,7 +2919,7 @@
     tvRound = ri;
     expandedRounds = {}; expandedRounds[ri] = true;
     swapSel = null;
-    renderRounds(); fitCourtNames(); renderWatermark();
+    renderRounds(); renderStepUi(); fitCourtNames(); renderWatermark();
     var el = byId("round-" + (ri + 1));
     if (el && !isTv()) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -3112,6 +3325,7 @@
 
   byId("add-player").addEventListener("click", addPlayer);
   byId("new-name").addEventListener("keydown", function (e) { if (e.key === "Enter") addPlayer(); });
+  byId("new-name").addEventListener("input", applyRosterFilter);
 
   function addPlayer() { walkIn(byId("new-name")); }
 
@@ -3235,20 +3449,9 @@
     if (box.classList.contains("show")) byId("courts-input").focus();
   });
 
-  byId("generate").addEventListener("click", function () { makeRound(); });
-
   byId("print-day").addEventListener("click", function () { printElement(byId("day-panel")); });
 
-  byId("new-day").addEventListener("click", function () {
-    askConfirm("day-confirm", "Start a new day? This clears all " + plural(state.rounds.length, "round") + " — the roster stays.", "Clear rounds", function () {
-      var gone = state.rounds;
-      state.rounds = [];
-      save(); renderAll();
-      toast("New day started.", null, "Undo", function () {
-        state.rounds = gone; save(); renderAll();
-      });
-    });
-  });
+  byId("new-day").addEventListener("click", function () { askNewDay("day-confirm"); });
 
   byId("dv-timeline").addEventListener("click", function () {
     if (state.dayView !== "timeline") { state.dayView = "timeline"; save(); renderDay(); }
@@ -3257,37 +3460,159 @@
     if (state.dayView !== "table") { state.dayView = "table"; save(); renderDay(); }
   });
 
-  /* ---------------- sticky quick bar ---------------- */
+  /* ---------------- steps: Players → Courts → Draw & fix → Show ----------------
+     Which step is on screen lives on <html data-step>, so the CSS does the
+     showing and hiding. Remembered per browser (sbts_step), like the theme. */
 
-  (function buildQuickBar() {
-    var bar = document.createElement("div");
-    bar.id = "quick-bar";
-    bar.innerHTML =
-      '<input type="text" id="qb-walkin" placeholder="+ Someone walked in… type a name" list="roster-names" aria-label="Someone walked in — type a name">' +
-      '<span class="qb-info" id="qb-info"></span>' +
-      '<span class="spacer"></span>' +
-      '<button class="btn quiet" id="qb-top">↑ Top</button>' +
-      '<button class="btn primary" id="qb-generate">Generate round</button>';
-    document.body.appendChild(bar);
-
-    bar.querySelector("#qb-walkin").addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); walkIn(e.target); }
-    });
-    bar.querySelector("#qb-generate").addEventListener("click", function () { makeRound(); });
-    bar.querySelector("#qb-top").addEventListener("click", function () {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
-    function update() {
-      var panel = byId("setup-panel");
-      if (!panel) return;
-      var past = panel.getBoundingClientRect().bottom < 0;
-      bar.classList.toggle("show", past);
-    }
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    update();
+  var STEPS = ["who", "courts", "draw", "show"];
+  var step = (function () {
+    var s = null;
+    try { s = localStorage.getItem("sbts_step"); } catch (e) { /* private mode */ }
+    if (STEPS.indexOf(s) < 0) s = state.rounds.length ? "draw" : "who";
+    return s;
   })();
+  document.documentElement.setAttribute("data-step", step);
+
+  function goStep(s) {
+    if (STEPS.indexOf(s) < 0) return;
+    if (step !== s) { swapSel = null; removeSwapBar(); }
+    step = s;
+    document.documentElement.setAttribute("data-step", s);
+    try { localStorage.setItem("sbts_step", s); } catch (e) { /* private mode */ }
+    clearConfirms();
+    renderAll();
+    window.scrollTo(0, 0);
+  }
+
+  byId("step-bar").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-go]");
+    if (b) goStep(b.getAttribute("data-go"));
+  });
+
+  /* The step bar's little status lines, the bottom action bar, and the
+     "nothing drawn yet" message. Called from renderSetup (so it runs on
+     every renderAll and every tick/court change). */
+  function renderStepUi() {
+    var pool = state.roster.filter(function (p) { return p.playing; });
+    var info = describeShape(pool);
+    var saved = savedRounds().length;
+    var draft = draftRound();
+    var nextNo = saved + 1;
+
+    STEPS.forEach(function (s) {
+      var b = document.querySelector('#step-bar [data-go="' + s + '"]');
+      b.classList.toggle("active", s === step);
+      b.setAttribute("aria-current", s === step ? "step" : "false");
+    });
+    byId("sb-who").textContent = pool.length + " here";
+    byId("sb-courts").textContent = plural(info.labels.length, "court") + " open";
+    byId("sb-draw").textContent = draft ? "Round " + nextNo + " draft" : (saved ? plural(saved, "round") + " saved" : "Not drawn yet");
+    var cur = currentRound();
+    byId("sb-show").textContent = cur >= 0 ? (state.rounds[cur].draft ? "Draft" : "Round " + (cur + 1)) : "—";
+
+    /* nothing to draw or show yet */
+    var empty = byId("rounds-empty");
+    if (!state.rounds.length) {
+      empty.style.display = "";
+      empty.innerHTML = "<p><strong>No draw yet today.</strong></p><p>" +
+        (pool.length < 2 ? "Start by ticking who's here in <b>Players</b>." : pool.length + " ticked in. Check the courts, then generate round 1.") +
+        "</p>";
+    } else {
+      empty.style.display = "none";
+      empty.innerHTML = "";
+    }
+
+    /* "rounds from earlier" reminder on step 1, so a new day is easy to start */
+    var whoNote = byId("who-day-note");
+    if (state.rounds.length && !whoNote.querySelector(".confirm-strip")) {
+      whoNote.innerHTML = '<div class="day-reminder"><span>' + plural(saved, "round") + " saved" + (draft ? " plus a draft" : "") +
+        " so far. New day?</span>" +
+        '<button class="btn sm danger" id="who-new-day">Start a new day</button></div><div id="who-day-confirm"></div>';
+      byId("who-new-day").addEventListener("click", function () { askNewDay("who-day-confirm"); });
+    } else if (!state.rounds.length) {
+      whoNote.innerHTML = "";
+    }
+
+    renderStepFoot(pool, info, saved, draft, nextNo);
+  }
+
+  /* The bar along the bottom: a one-line summary and the next thing to do.
+     Its buttons carry data-act; one click handler (below) runs them. */
+  function renderStepFoot(pool, info, saved, draft, nextNo) {
+    var foot = byId("step-foot");
+    var left = "", right = "";
+    var genBtn = function (label, cls) {
+      return '<button class="btn ' + (cls || "primary big") + '" data-act="generate">' + label + "</button>";
+    };
+
+    if (step === "who") {
+      left = '<span class="sf-info"><b>' + pool.length + "</b> here today</span>";
+      right = '<button class="btn primary big" data-act="go" data-to="courts">Next: Courts →</button>';
+    } else if (step === "courts") {
+      left = '<span class="sf-info"><b>' + pool.length + "</b> playing · " + esc(info.text || "no matches yet") + "</span>";
+      right = '<button class="btn quiet" data-act="go" data-to="who">← Players</button>' +
+        genBtn(draft ? "Re-draw round " + nextNo + " →" : "Generate round " + nextNo + " →");
+    } else if (step === "draw") {
+      left = '<input type="text" id="sf-walkin" placeholder="+ Someone walked in… type a name" list="roster-names" aria-label="Someone walked in — type a name">';
+      if (!state.rounds.length) {
+        right = '<button class="btn quiet" data-act="go" data-to="courts">← Courts</button>' + genBtn("Generate round 1 →");
+      } else if (draft) {
+        right = genBtn("Re-draw", "quiet") +
+          '<button class="btn primary big" data-act="save">Save &amp; show round ' + nextNo + " →</button>";
+      } else {
+        right = '<button class="btn" data-act="go" data-to="show">Show round ' + saved + "</button>" +
+          genBtn("Next round " + nextNo + " →");
+      }
+    } else if (step === "show") {
+      if (!state.rounds.length) {
+        right = '<button class="btn primary big" data-act="go" data-to="courts">← Courts</button>';
+      } else {
+        left = '<button class="btn" data-act="tv">Full screen on TV</button>' +
+          '<button class="btn quiet" data-act="print">Print</button>';
+        right = '<button class="btn quiet" data-act="go" data-to="draw">← Fix it</button>' +
+          (draft ? '<button class="btn primary big" data-act="go" data-to="draw">Finish the draft →</button>'
+                 : genBtn("Next round " + nextNo + " →"));
+      }
+    }
+
+    /* keep a half-typed walk-in name across re-renders */
+    var old = byId("sf-walkin");
+    var typed = old ? old.value : "";
+    var hadFocus = old && document.activeElement === old;
+    foot.innerHTML = '<div class="sf-left">' + left + '</div><div class="sf-right">' + right + "</div>";
+    var wi = byId("sf-walkin");
+    if (wi) {
+      wi.value = typed;
+      if (hadFocus) wi.focus();
+      wi.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); walkIn(wi); }
+      });
+    }
+  }
+
+  byId("step-foot").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]");
+    if (!b || b.disabled) return;
+    var act = b.getAttribute("data-act");
+    if (act === "go") goStep(b.getAttribute("data-to"));
+    else if (act === "generate") makeRound();
+    else if (act === "save") { var d = state.rounds.length - 1; if (draftRound()) saveRound(d); }
+    else if (act === "tv") setTv(true);
+    else if (act === "print") { var el = byId("round-" + (currentRound() + 1)); if (el) printElement(el); }
+  });
+
+  function askNewDay(hostId) {
+    askConfirm(hostId, "Start a new day? This clears all " + plural(state.rounds.length, "round") + " — the roster stays.", "Clear rounds", function () {
+      var gone = state.rounds;
+      state.rounds = [];
+      tvRound = -1; expandedRounds = {};
+      save();
+      goStep("who");
+      toast("New day started.", null, "Undo", function () {
+        state.rounds = gone; save(); renderAll();
+      });
+    });
+  }
 
   /* ---------------- theme toggle ---------------- */
 
