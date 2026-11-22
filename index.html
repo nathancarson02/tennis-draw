@@ -1241,6 +1241,130 @@
     .shape-card b { font-size: 1.7rem; }
     #court-picker .court-picker { grid-template-columns: repeat(7, minmax(0, 1fr)); width: 100%; }
   }
+
+  /* ============================================================
+     16. MATCH FORMAT + ROUND TIMER (22 Nov 2026)
+     Display only - the draw never reads either of them.
+     JS: the "match format + round timer" block in the script.
+     ============================================================ */
+  /* step 2: the format buttons */
+  .fmt-field { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .fmt-seg { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .fmt-seg button {
+    font: inherit; font-size: 0.95rem; padding: 0.55rem 0.85rem; cursor: pointer;
+    border-radius: var(--r-sm); border: 1px solid var(--line);
+    background: var(--surface-2); color: var(--ink);
+  }
+  .fmt-seg button:hover { border-color: var(--brand); }
+  .fmt-seg button.on { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); font-weight: 700; }
+  .fmt-rule { margin: 0.1rem 0 0; font-size: 0.88rem; color: var(--muted); }
+  .fmt-rule b { color: var(--ink); }
+
+  /* the line on each round, then the clock, then the timer buttons */
+  .round-head .fmt-line {
+    order: 9; flex-basis: 100%; margin: 0; display: flex; align-items: center; flex-wrap: wrap;
+    gap: 0.3rem 0.55rem; font-size: 0.92rem; color: var(--ink-soft); min-width: 0;
+  }
+  .fmt-name {
+    background: var(--ball); color: var(--ball-ink); font-family: var(--font-body); font-weight: 700;
+    padding: 0.1rem 0.6rem; border-radius: 999px; font-size: 0.82em; white-space: nowrap;
+  }
+  .fmt-line .dot { color: var(--muted); }
+  .round-head .round-clock { order: 10; }
+  .round-head .timer-tools { order: 11; display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+  .timer-tools .tt-lbl { font-size: 0.82rem; color: var(--muted); }
+  .timer-tools input { width: 4.6rem; padding: 0.28rem 0.45rem; font-size: 0.85rem; }
+
+  .round-clock {
+    display: inline-flex; align-items: baseline; gap: 0.45rem;
+    padding: 0.2rem 0.7rem; border-radius: var(--r-sm);
+    border: 1px solid var(--line); background: var(--surface-2);
+  }
+  .round-clock .rc-num { font-family: var(--font-mono); font-weight: 700; font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .round-clock .rc-cap { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+  .round-clock.last { border-color: #E0A93A; background: #E0A93A; }
+  .round-clock.last .rc-num, .round-clock.last .rc-cap { color: #1a1a1a; }
+  .round-clock.time { border-color: var(--danger); background: var(--danger); }
+  .round-clock.time .rc-num, .round-clock.time .rc-cap { color: var(--surface); }
+  .round-clock.pulse { animation: rc-pulse 0.9s ease-in-out infinite alternate; }
+  @keyframes rc-pulse { from { opacity: 1; } to { opacity: 0.55; } }
+  @media (prefers-reduced-motion: reduce) { .round-clock.pulse { animation: none; } }
+
+  /* Show + TV: the format in big type, the clock big on the right */
+  :root[data-step="show"] .round-head .fmt-line,
+  :root[data-tv="on"] .round-head .fmt-line {
+    font-family: var(--font-display); font-size: clamp(1.15rem, 2.6vw, 2.2rem);
+    color: var(--ink); line-height: 1.25;
+  }
+  :root[data-step="show"] .round-head .round-clock,
+  :root[data-tv="on"] .round-head .round-clock {
+    order: 1; margin-left: auto; align-self: center;
+    flex-direction: column; align-items: center; gap: 0.15rem;
+    padding: 0.4rem 1.2rem 0.55rem; border-width: 2px; border-radius: var(--r-md); min-width: 10.5rem;
+  }
+  :root[data-step="show"] .round-clock .rc-num,
+  :root[data-tv="on"] .round-clock .rc-num { font-size: clamp(2.2rem, 5.5vw, 4.4rem); line-height: 1; }
+  :root[data-step="show"] .round-clock .rc-cap,
+  :root[data-tv="on"] .round-clock .rc-cap { font-size: 0.85rem; letter-spacing: 0.14em; text-transform: uppercase; }
+  :root[data-tv="on"] .timer-tools { display: none !important; }
+  @media (max-width: 560px) {
+    :root[data-step="show"] .round-head .round-clock,
+    :root[data-tv="on"] .round-head .round-clock { margin-left: 0; width: 100%; }
+  }
+  @media print { .round-clock, .timer-tools { display: none !important; } }
+
+  /* ============================================================
+     SCORES + LEADERBOARD (22 Nov 2026) - optional games per side under
+     each SAVED court, and Whole day > Leaderboard. Hidden on the TV.
+     ============================================================ */
+  /* the row shrinks with the court: two boxes share the width, never wider than 3.2rem each */
+  .court-score {
+    display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 0.25rem;
+    margin-top: 0.35rem; font-size: 0.74rem; color: var(--muted); min-width: 0;
+  }
+  .court-score .score-in { flex: 1 1 0; min-width: 0; max-width: 3.2rem; width: auto; }
+  .cs-dash { font-weight: 700; flex: none; }
+  .score-in::placeholder { font-size: 0.66rem; font-weight: 600; color: var(--muted); opacity: 0.8; }
+  .score-in {
+    width: 2.7rem; padding: 0.22rem 0.1rem; text-align: center;
+    font: inherit; font-size: 1.05rem; font-weight: 700; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px;
+    -moz-appearance: textfield; appearance: textfield;
+  }
+  .score-in::-webkit-outer-spin-button, .score-in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .score-in:focus { outline: 2px solid var(--ball); outline-offset: 1px; }
+  .court-score.has-score .score-in { border-color: var(--brand); }
+  .score-print { display: none; }
+  .tbl-score { display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; font-style: normal; }
+  .tl-score { font-style: normal; color: var(--ink); font-size: 0.9rem; }
+  :root[data-tv="on"] .court-score, :root[data-tv="on"] .tbl-score { display: none !important; }
+  :root[data-tv="on"] .vs-cell .score-print { display: inline; }
+
+  .lb-table th.num, .lb-table td.num { text-align: center; }
+  .lb-table td.lb-rank { font-weight: 700; color: var(--muted); width: 3rem; }
+  .lb-table td.lb-name { text-align: left; font-weight: 600; white-space: nowrap; }
+  .lb-table td.lb-won { font-weight: 800; font-size: 1.05rem; color: var(--ink); }
+  .lb-table tr.lb-top td { background: color-mix(in srgb, var(--ball) 16%, transparent); }
+  .lb-table tr.lb-none td { color: var(--muted); }
+  .lb-visitor {
+    display: inline-block; margin-left: 0.45rem; padding: 0 0.45rem; border-radius: 999px;
+    font-size: 0.7rem; font-weight: 700; vertical-align: 0.1em;
+    background: var(--visitor-tint); border: 1px solid var(--visitor); color: var(--ink);
+  }
+  .lb-unscored { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+  @media (max-width: 560px) {
+    table.sheet.lb-table th, table.sheet.lb-table td { padding-left: 0.3rem; padding-right: 0.3rem; }
+    table.sheet.lb-table th { white-space: normal; letter-spacing: 0.04em; }
+    .lb-table td.lb-name { white-space: normal; }
+    .lb-visitor { margin-left: 0; }
+    .lb-unscored { display: block; }
+  }
+  @media print {
+    .cs-dash, .score-in, .tbl-score { display: none !important; }
+    .court-score:not(.has-score) { display: none !important; }
+    .score-print { display: inline; font-weight: 700; color: #16241C; }
+    .lb-table tr.lb-top td { background: none; }
+  }
 </style>
 </head>
 <body>
@@ -1374,6 +1498,12 @@
         </div>
       </div>
     </div>
+    <!-- match format (22 Nov 2026): filled by renderFormatPicker(); display only -->
+    <div class="fmt-field">
+      <span class="lbl" id="format-lbl">Match format — next round, and the rest of the day</span>
+      <div class="fmt-seg" id="format-picker" role="group" aria-labelledby="format-lbl"></div>
+      <p class="fmt-rule" id="format-rule"></p>
+    </div>
     <div id="setup-confirm"></div>
   </section>
   </div>
@@ -1397,6 +1527,7 @@
         <div class="seg" role="group" aria-label="Whole day view">
           <button data-dayview="timeline" id="dv-timeline">Timeline</button>
           <button data-dayview="table" id="dv-table">Table</button>
+          <button data-dayview="board" id="dv-board" title="Day leaderboard from the scores typed under each court">Leaderboard</button>
         </div>
         <button class="btn sm" id="print-day">Print</button>
       </div>
@@ -1954,7 +2085,8 @@
     }
 
     var resting = state.roster.filter(function (p) { return !p.playing; }).map(function (p) { return p.id; });
-    state.rounds.push({ courts: courts, byes: byes, resting: resting, draft: true });
+    state.rounds.push({ courts: courts, byes: byes, resting: resting, draft: true,
+      format: state.format || null });   // display only (match format block)
     byId("pin-a").value = ""; byId("pin-b").value = ""; // pin is a one-round request
     tvRound = state.rounds.length - 1;
     save();
@@ -2386,9 +2518,10 @@
     r.courts.forEach(function (c) { if (String(c.label) === target) b = c; });
     if (b) {
       // that court is busy — court numbers stay put, the two groups trade places
-      var tmp = { type: a.type, teamA: a.teamA, teamB: a.teamB };
+      var tmp = { type: a.type, teamA: a.teamA, teamB: a.teamB, score: a.score };
       a.type = b.type; a.teamA = b.teamA; a.teamB = b.teamB;
       b.type = tmp.type; b.teamA = tmp.teamA; b.teamB = tmp.teamB;
+      a.score = b.score; b.score = tmp.score;   // a score goes with its group
     } else {
       a.label = target;   // empty court — just move across
     }
@@ -2850,7 +2983,7 @@
         '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="1" data-move-round="' + ri + '" title="Move this group one court to the left">&#9664;</button>' +
         courtTypeSeg(ri, ci, isS) +
         '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="-1" data-move-round="' + ri + '" title="Move this group one court to the right">&#9654;</button>' +
-        "</div></div>";
+        "</div>" + courtScoreHtml(r, ri, ci) + "</div>";   // scores + leaderboard
     }
     return html;
   }
@@ -2878,7 +3011,7 @@
         ' <button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="-1" data-move-round="' + ri + '" title="Move this group up a court">&#9650;</button>' +
         '<button class="btn quiet sm mv-btn" data-move="' + ci + '" data-dir="1" data-move-round="' + ri + '" title="Move this group down a court">&#9660;</button>' +
         "</td>" +
-        '<td class="team-cell">' + a + '</td><td class="vs-cell">vs</td><td class="team-cell">' + b + clashNoteHtml(cl) + "</td></tr>";
+        '<td class="team-cell">' + a + '</td><td class="vs-cell">' + tableScoreHtml(r, ri, ci) + '</td><td class="team-cell">' + b + clashNoteHtml(cl) + "</td></tr>";
     });
     html += "</tbody></table></div>";
     return html;
@@ -2958,7 +3091,7 @@
             '<button class="btn quiet sm del-round" data-del-round="' + ri + '">Throw away</button>'
           : '<button class="btn sm" data-print-round="' + ri + '">Print</button>' +
             '<button class="btn quiet sm del-round" data-del-round="' + ri + '" title="Delete this round (with Undo)">Delete</button>') +
-        "</div></div>" +
+        "</div>" + roundFormatTimerHtml(r, ri) + "</div>" +   // format line + timer (match format block)
         '<div class="round-confirm" id="round-confirm-' + ri + '"></div>';
 
       html += '<div class="r-body">';
@@ -3117,7 +3250,7 @@
         var isS = c.type === "singles";
         html += '<div class="tl-cell' + (isS ? " is-singles" : "") + '"><div class="tl-match">' +
           '<div class="tl-side">' + esc(c.teamA.map(nameOf).join(" & ")) + "</div>" +
-          '<div class="tl-net">' + (isS ? "singles" : "v") + "</div>" +
+          '<div class="tl-net">' + (scoreText(c) ? '<b class="tl-score">' + scoreText(c) + "</b>" + (isS ? " singles" : "") : (isS ? "singles" : "v")) + "</div>" +
           '<div class="tl-side">' + esc(c.teamB.map(nameOf).join(" & ")) + "</div>" +
           "</div></div>";
       });
@@ -3177,17 +3310,165 @@
 
     byId("dv-timeline").className = state.dayView === "timeline" ? "active" : "";
     byId("dv-table").className = state.dayView === "table" ? "active" : "";
+    byId("dv-board").className = state.dayView === "board" ? "active" : "";   // scores + leaderboard
 
     byId("day-sub").textContent = plural(rounds.length, "round") + " saved so far · " +
       allCourtLabels().length + " courts in play";
 
-    if (state.dayView === "timeline") {
+    if (state.dayView === "board") {   // scores + leaderboard
+      var lb = leaderboardRows();
+      byId("day-body").innerHTML = leaderboardHtml();
+      byId("day-legend").innerHTML = lb.scored
+        ? "Scores in for <strong>" + lb.scored + " of " + lb.courts + "</strong> courts · ranked by <strong>games won</strong>, then fewest games lost · doubles and singles both count · sitting out scores nothing · <strong>=</strong> means a tie"
+        : "";
+    } else if (state.dayView === "timeline") {
       byId("day-body").innerHTML = dayTimelineHtml();
       byId("day-legend").innerHTML = "Rounds run down the page, courts run across · highlighted cells are <strong>singles</strong> · this view is read-only — edit a round in its own panel above.";
     } else {
       byId("day-body").innerHTML = dayTableHtml();
       byId("day-legend").innerHTML = "Numbers = court · <strong>S</strong> before a number = singles · <strong>R</strong> = not here today · <strong>sat</strong> = sat that round to even the numbers";
     }
+  }
+
+  /* ---------------- SCORES + LEADERBOARD (22 Nov 2026) ----------------
+     Optional. Each court in a SAVED round can take a score, games per side,
+     kept on the court itself: c.score = [top side (teamA), bottom side (teamB)].
+     Blank = not entered. Nathan's rules: a player's day = GAMES WON (ties split
+     by fewest games lost); sitting out earns nothing; visitors are listed with a
+     tag; the leaderboard is not on the TV. Scores NEVER feed the draw -
+     buildHistory() / scoreDraw() don't read them. */
+
+  function courtScore(c) {   // [top, bottom] when both sides are filled in, else null
+    var s = c && c.score;
+    if (!s || s.length !== 2 || typeof s[0] !== "number" || typeof s[1] !== "number") return null;
+    return s;
+  }
+  function scoreText(c) { var s = courtScore(c); return s ? s[0] + "–" + s[1] : ""; }
+
+  function scoreBoxHtml(ri, ci, c, side, ph) {   // ph = placeholder word ("top" on the board)
+    var k = side === "A" ? 0 : 1;
+    var v = c.score && typeof c.score[k] === "number" ? c.score[k] : "";
+    var who = "Games won by " + (c["team" + side].map(nameOf).join(" & ") || "the " + (k ? "bottom" : "top") + " side");
+    return '<input class="score-in" type="number" inputmode="numeric" min="0" max="99" step="1" value="' + v + '"' +
+      (ph ? ' placeholder="' + ph + '"' : "") +
+      ' data-score-round="' + ri + '" data-score-court="' + ci + '" data-score-side="' + side + '"' +
+      ' aria-label="' + esc(who) + '" title="' + esc(who) + '">';
+  }
+
+  /* the score row under a court on the board (saved rounds only) */
+  function courtScoreHtml(r, ri, ci) {
+    if (r.draft) return "";
+    var c = r.courts[ci], t = scoreText(c);
+    return '<div class="court-score' + (t ? " has-score" : "") + '" title="Games won: top side, then bottom side. Leave blank if nobody kept score.">' +
+      scoreBoxHtml(ri, ci, c, "A", "top") + '<span class="cs-dash">–</span>' + scoreBoxHtml(ri, ci, c, "B", "bottom") +
+      '<span class="score-print">' + (t ? "Games " + t : "") + "</span></div>";
+  }
+
+  /* the middle "vs" cell of the round Table view */
+  function tableScoreHtml(r, ri, ci) {
+    if (r.draft) return "vs";
+    var c = r.courts[ci], t = scoreText(c);
+    return '<span class="tbl-score">' + scoreBoxHtml(ri, ci, c, "A") + '<span class="cs-dash">–</span>' +
+      scoreBoxHtml(ri, ci, c, "B") + '</span><span class="score-print">' + (t || "vs") + "</span>";
+  }
+
+  /* typing in a box saves straight away; only the leaderboard re-renders,
+     so the box keeps focus */
+  function setScoreFromInput(inp) {
+    var r = state.rounds[parseInt(inp.getAttribute("data-score-round"), 10)];
+    if (!r || r.draft) return;
+    var c = r.courts[parseInt(inp.getAttribute("data-score-court"), 10)];
+    if (!c) return;
+    var raw = String(inp.value).trim(), n = raw === "" ? null : parseInt(raw, 10);
+    if (n !== null && (isNaN(n) || n < 0)) n = null;
+    if (n !== null && n > 99) n = 99;
+    var s = c.score ? c.score.slice() : [null, null];
+    s[inp.getAttribute("data-score-side") === "A" ? 0 : 1] = n;
+    if (s[0] === null && s[1] === null) delete c.score; else c.score = s;
+    save();
+    var t = scoreText(c);
+    var row = inp.closest(".court-score");
+    if (row) {
+      row.classList.toggle("has-score", !!t);
+      row.querySelector(".score-print").textContent = t ? "Games " + t : "";
+    } else {
+      var cell = inp.closest("td");
+      if (cell && cell.querySelector(".score-print")) cell.querySelector(".score-print").textContent = t || "vs";
+    }
+    renderDay();
+  }
+
+  byId("rounds-container").addEventListener("input", function (e) {
+    if (e.target.classList && e.target.classList.contains("score-in")) setScoreFromInput(e.target);
+  });
+  /* Enter in the first box jumps to the second; in the second it just closes the keyboard */
+  byId("rounds-container").addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (e.key !== "Enter" || !t.classList || !t.classList.contains("score-in")) return;
+    e.preventDefault();
+    var boxes = t.parentElement.querySelectorAll(".score-in");
+    if (t.getAttribute("data-score-side") === "A" && boxes[1]) boxes[1].focus(); else t.blur();
+  });
+
+  /* One row per player who was on court in a saved round (players since
+     deleted from the roster drop out, but their games still count for the
+     people they played). */
+  function leaderboardRows() {
+    var rows = {}, courts = 0, scored = 0;
+    function row(id) { return rows[id] || (rows[id] = { id: id, played: 0, scored: 0, won: 0, lost: 0 }); }
+    savedRounds().forEach(function (r) {
+      r.courts.forEach(function (c) {
+        var ids = c.teamA.concat(c.teamB);
+        if (!ids.length) return;
+        courts++;
+        ids.forEach(function (id) { row(id).played++; });
+        var s = courtScore(c);
+        if (!s) return;
+        scored++;
+        c.teamA.forEach(function (id) { var x = row(id); x.scored++; x.won += s[0]; x.lost += s[1]; });
+        c.teamB.forEach(function (id) { var x = row(id); x.scored++; x.won += s[1]; x.lost += s[0]; });
+      });
+    });
+    var list = Object.keys(rows).map(function (k) { return rows[k]; })
+      .filter(function (x) { return playerById(x.id); });
+    list.sort(function (a, b) {
+      return (b.scored > 0) - (a.scored > 0) || b.won - a.won || a.lost - b.lost ||
+        nameOf(a.id).localeCompare(nameOf(b.id));
+    });
+    /* equal games won AND lost = equal place ("3=") */
+    var place = 0;
+    list.forEach(function (x, i) {
+      if (!x.scored) { x.place = null; return; }
+      var p = list[i - 1];
+      if (!p || p.won !== x.won || p.lost !== x.lost) place = i + 1;
+      x.place = place;
+    });
+    list.forEach(function (x) {
+      x.tied = x.place !== null && list.filter(function (y) { return y.place === x.place; }).length > 1;
+    });
+    return { list: list, courts: courts, scored: scored };
+  }
+
+  function leaderboardHtml() {
+    var d = leaderboardRows();
+    if (!d.scored) {
+      return '<p class="inline-note lb-empty">No scores yet. After a court finishes, type the games each side won in the two boxes under it (in <strong>Show</strong> or <strong>Draw &amp; fix</strong>). Leave them blank if nobody kept score.</p>';
+    }
+    var html = '<div class="day-scroll"><table class="sheet lb-table"><thead><tr>' +
+      '<th class="num">#</th><th style="text-align:left;">Player</th>' +
+      '<th class="num" title="Games won, all day">Games won</th><th class="num" title="Games lost, all day">Games lost</th>' +
+      '<th class="num" title="Rounds on court (sitting out does not count)">Played</th></tr></thead><tbody>';
+    d.list.forEach(function (x) {
+      var p = playerById(x.id);
+      html += '<tr class="' + (x.place === 1 ? "lb-top" : "") + (x.place === null ? " lb-none" : "") + '">' +
+        '<td class="num lb-rank">' + (x.place === null ? "–" : x.place + (x.tied ? "=" : "")) + "</td>" +
+        '<td class="lb-name">' + esc(p.name) + (p.member ? "" : '<span class="lb-visitor">visitor</span>') + "</td>" +
+        '<td class="num lb-won">' + (x.scored ? x.won : "–") + "</td>" +
+        '<td class="num">' + (x.scored ? x.lost : "–") + "</td>" +
+        '<td class="num">' + x.played + (x.scored < x.played ? ' <span class="lb-unscored">(' + x.scored + " scored)</span>" : "") + "</td></tr>";
+    });
+    html += "</tbody></table></div>";
+    return html;
   }
 
   /* Court names start big — they're read from across the court. Any name
@@ -3277,12 +3558,152 @@
     renderWatermarkHost(byId("event-watermark"), EVENT_ON ? EVENT.art : null);
   }
 
+  /* ---------------- match format + round timer (22 Nov 2026) ----------------
+     DISPLAY ONLY: the draw (who plays whom) never reads either of these.
+     Nathan asked on 18 Oct 2026 for the draw to stay as random as possible.
+       state.format  the format picked in step 2 Courts = the day's default
+                     (null = none picked, so rounds show no format line)
+       r.format      the format a round was drawn with; old rounds keep theirs.
+                     An unsaved draft follows the picker until it is saved.
+       r.timer       { end: <epoch ms>, mins: n }. The END time is stored, not
+                     a ticking count, so a refresh or a sleeping laptop loses
+                     nothing. Only saved rounds get a timer. */
+  var FORMATS = {
+    tb:    { name: "TB set",       rules: ["first to 6", "win by 2", "tiebreak at 6-all"] },
+    fast4: { name: "Fast4",        rules: ["first to 4", "tiebreak at 3-all", "no-ad", "no lets"] },
+    set6:  { name: "One set to 6", rules: ["first to 6 games", "tiebreak at 6-all"] },
+    pro8:  { name: "8 games",      rules: ["first to 8 games"] },
+    timed: { name: "Timed",        rules: ["play until time is called"] }
+  };
+  var FORMAT_ORDER = ["tb", "fast4", "set6", "pro8", "timed"];
+  var TIMER_PRESETS = [20, 25, 30];
+  var LAST_GAME_MS = 3 * 60 * 1000;          // amber "Last game" from 3 minutes left
+  var TIMER_KEEP_MS = 10 * 60 * 1000;        // a finished clock drops off 10 minutes after time
+  var timerOtherOpen = -1;                   // which round has its "Other…" minutes box open
+
+  function renderFormatPicker() {
+    var host = byId("format-picker");
+    if (!host) return;
+    host.innerHTML = FORMAT_ORDER.map(function (k) {
+      var on = state.format === k;
+      return '<button type="button" data-format="' + k + '" aria-pressed="' + on + '"' +
+        (on ? ' class="on"' : "") + ">" + esc(FORMATS[k].name) + "</button>";
+    }).join("");
+    var f = FORMATS[state.format];
+    byId("format-rule").innerHTML = f
+      ? "<b>" + esc(f.name) + ":</b> " + esc(f.rules.join(", ")) + ". Tap it again for no format."
+      : "None picked, so the rounds show no format. It's a label for the players only; it never changes the draw.";
+  }
+
+  byId("format-picker").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-format]");
+    if (!b) return;
+    var k = b.getAttribute("data-format");
+    state.format = state.format === k ? null : k;
+    var d = draftRound();
+    if (d) d.format = state.format;          // the unsaved draft follows; saved rounds keep their own
+    save(); renderAll();
+  });
+
+  function timerShown(r, now) { return !!(r && r.timer && now < r.timer.end + TIMER_KEEP_MS); }
+
+  /* what the clock says right now: running / amber "Last game" / red "Time" */
+  function clockFace(t, now) {
+    var left = t.end - now;
+    if (left <= 0) return { cls: "time" + (left > -60000 ? " pulse" : ""), num: "0:00", cap: "Time" };
+    var s = Math.ceil(left / 1000);
+    var num = Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2);
+    return left <= LAST_GAME_MS ? { cls: "last", num: num, cap: "Last game" }
+                                : { cls: "", num: num, cap: "left this round" };
+  }
+
+  /* the extra bits in a round's header (called from renderRounds) */
+  function roundFormatTimerHtml(r, ri) {
+    var now = Date.now(), html = "";
+    if (timerShown(r, now)) {
+      var face = clockFace(r.timer, now);
+      html += '<div class="round-clock' + (face.cls ? " " + face.cls : "") + '" data-clock="' + ri + '" role="timer">' +
+        '<span class="rc-num">' + face.num + '</span><span class="rc-cap">' + esc(face.cap) + "</span></div>";
+    }
+    var f = FORMATS[r.format];
+    if (f) {
+      html += '<p class="fmt-line"><span class="fmt-name">' + esc(f.name) + "</span><span>" +
+        f.rules.map(esc).join(' <span class="dot">·</span> ') + "</span></p>";
+    }
+    if (!r.draft) {
+      html += '<div class="timer-tools">';
+      if (timerShown(r, now)) {
+        html += '<span class="tt-lbl">' + r.timer.mins + "-minute timer</span>" +
+          '<button type="button" class="btn quiet sm" data-timer="stop" data-ri="' + ri + '">Stop timer</button>';
+      } else {
+        html += '<span class="tt-lbl">Timer:</span>' + TIMER_PRESETS.map(function (m) {
+          return '<button type="button" class="btn sm" data-timer="start" data-ri="' + ri + '" data-mins="' + m + '">' + m + " min</button>";
+        }).join("");
+        html += timerOtherOpen === ri
+          ? '<input type="number" id="timer-other-' + ri + '" min="1" max="180" step="1" placeholder="mins" aria-label="Timer minutes">' +
+            '<button type="button" class="btn primary sm" data-timer="go" data-ri="' + ri + '">Start</button>'
+          : '<button type="button" class="btn quiet sm" data-timer="other" data-ri="' + ri + '">Other…</button>';
+      }
+      html += "</div>";
+    }
+    return html;
+  }
+
+  function refreshRoundsOnly() { renderRounds(); fitCourtNames(); renderWatermark(); }
+
+  function startTimer(ri, mins) {
+    var r = state.rounds[ri];
+    if (!r) return;
+    if (!(mins >= 1 && mins <= 180)) { toast("Pick between 1 and 180 minutes.", "warn"); return; }
+    r.timer = { end: Date.now() + Math.round(mins) * 60000, mins: Math.round(mins) };
+    timerOtherOpen = -1;
+    save(); refreshRoundsOnly();
+  }
+
+  byId("rounds-container").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-timer]");
+    if (!b) return;
+    var ri = parseInt(b.getAttribute("data-ri"), 10), act = b.getAttribute("data-timer");
+    if (act === "start") startTimer(ri, parseInt(b.getAttribute("data-mins"), 10));
+    else if (act === "go") { var inp = byId("timer-other-" + ri); startTimer(ri, inp ? parseFloat(inp.value) : NaN); }
+    else if (act === "stop") { if (state.rounds[ri]) delete state.rounds[ri].timer; save(); refreshRoundsOnly(); }
+    else if (act === "other") {
+      timerOtherOpen = ri; refreshRoundsOnly();
+      var i = byId("timer-other-" + ri); if (i) i.focus();
+    }
+  });
+  byId("rounds-container").addEventListener("keydown", function (e) {
+    var m = e.target.id && /^timer-other-(\d+)$/.exec(e.target.id);
+    if (!m) return;
+    if (e.key === "Enter") { e.preventDefault(); startTimer(parseInt(m[1], 10), parseFloat(e.target.value)); }
+    else if (e.key === "Escape") { timerOtherOpen = -1; refreshRoundsOnly(); }
+  });
+
+  /* the tick: only touches the clock's own text, never re-draws the board
+     (except once, when a finished clock is due to drop off) */
+  setInterval(function () {
+    var els = document.querySelectorAll("[data-clock]");
+    if (!els.length) return;
+    var now = Date.now(), gone = false;
+    els.forEach(function (el) {
+      var r = state.rounds[parseInt(el.getAttribute("data-clock"), 10)];
+      if (!timerShown(r, now)) { gone = true; return; }
+      var f = clockFace(r.timer, now);
+      var cls = "round-clock" + (f.cls ? " " + f.cls : "");
+      if (el.className !== cls) el.className = cls;
+      if (el.firstChild.textContent !== f.num) el.firstChild.textContent = f.num;
+      if (el.lastChild.textContent !== f.cap) el.lastChild.textContent = f.cap;
+    });
+    if (gone) refreshRoundsOnly();
+  }, 250);
+
   /* ---------------- render all ---------------- */
 
   function renderAll() {
     renderRoster();
     renderNameList();
     renderSetup();
+    renderFormatPicker();
     renderRounds();
     renderDay();
     renderStats();
@@ -3449,6 +3870,9 @@
   });
   byId("dv-table").addEventListener("click", function () {
     if (state.dayView !== "table") { state.dayView = "table"; save(); renderDay(); }
+  });
+  byId("dv-board").addEventListener("click", function () {   // scores + leaderboard
+    if (state.dayView !== "board") { state.dayView = "board"; save(); renderDay(); }
   });
 
   /* ---------------- steps: Players → Courts → Draw & fix → Show ----------------
